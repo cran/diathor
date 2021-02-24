@@ -9,7 +9,7 @@
 A data frame with the abundance of 164 diatoms in 108 sampled sites
 }
 \source{
-\url{https://doi.org/10.1016/j.ecolind.2019.105951}
+\url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1930946X}
 }
 \usage{
 data(diat_sampleData)

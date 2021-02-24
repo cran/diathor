@@ -6,7 +6,7 @@
 #' @docType data
 #' @usage data(diat_sampleData)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1016/j.ecolind.2019.105951}
+#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1930946X}
 #' @references Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951.
 "diat_sampleData"
 
@@ -28,7 +28,7 @@
 #' @docType data
 #' @usage data(dbc_offline)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1051/kmae/2012018}
+#' @source \url{https://www.kmae-journal.org/articles/kmae/abs/2012/03/kmae120025/kmae120025.html}
 #' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14. DOI:10.1051/kmae/2012018
 "dbc_offline"
 
@@ -64,7 +64,7 @@
 #' @docType data
 #' @usage data(idap)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1007/BF00028033}
+#' @source \url{https://link.springer.com/article/10.1007/BF00028033}
 #' @references Prygiel, J., & Coste, M. (1993). The assessment of water quality in the Artois-Picardie water basin (France) by the use of diatom indices. Hydrobiologia, 269(1), 343-349.
 "idap"
 
@@ -88,7 +88,7 @@
 #' @docType data
 #' @usage data(idp)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1023/A:1011415209445}
+#' @source \url{https://link.springer.com/article/10.1023/A:1011415209445}
 #' @references Gómez, N., & Licursi, M. (2001). The Pampean Diatom Index (IDP) for assessment of rivers and streams in Argentina. Aquatic Ecology, 35(2), 173-181.
 "idp"
 
@@ -135,7 +135,7 @@
 #' @docType data
 #' @usage data(sla)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1002/aheh.19860140519}
+#' @source \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/aheh.19860140519}
 #' @references Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 "sla"
 
@@ -147,7 +147,7 @@
 #' @docType data
 #' @usage data(spear)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1016/j.ecolind.2018.12.035}
+#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X18309683}
 #' @references Wood, R. J., Mitrovic, S. M., Lim, R. P., Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic diatoms as indicators of herbicide toxicity in rivers–A new SPEcies At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
 "spear"
 
@@ -159,6 +159,6 @@
 #' @docType data
 #' @usage data(tdi)
 #' @encoding UTF-8
-#' @source \url{https://doi.org/10.1007/BF00003802}
+#' @source \url{https://link.springer.com/article/10.1007/BF00003802}
 #' @references Kelly, M. G., & Whitton, B. A. (1995). The trophic diatom index: a new index for monitoring eutrophication in rivers. Journal of Applied Phycology, 7(4), 433-444.
 "tdi"

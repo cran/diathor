@@ -41,6 +41,10 @@
 #' @importFrom tidyr gather
 #' @import ggplot2
 #' @import utils
+#' @import data.table
+#' @rawNamespace import(purrr, except = transpose)
+#' @import stringr
+#' @importFrom tibble tibble
 #' @export diaThorAll
 
 ###### ---------- MASTER FUNCTION, CALCULATES EVERYTHING WITH ALL POSSIBLE OUTPUTS BY DEFAULT  ---------- ########
@@ -182,7 +186,7 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
     sampleCol <- rep(sampleNames, ncol(result)) #gets sample names
     result <- tidyr::gather(result) #uses tidyr to rearrange the dataframe in a single column
     result$sampleCol <- sampleCol #adds another column with the sample names
-    colors <- c("#CC1C00", "#5C88DA", "#84BD00", "#FFCD00", "#7C878E", "#E64B35", "#4DBBD5", "#01A087", "#3C5488", "#F39B7F", "#FF410D99", "#6EE2FF99", "#F7C53099", "#95CC5E99", "#D0DFE699", "#F79D1E99", "#748AA699")
+    colors <- c("#CC1C00", "#5C88DA", "#84BD00", "#FFCD00", "#7C878E", "#E64B35", "#4DBBD5", "#01A087", "#3C5488", "#F39B7F", "#FF410D99", "#6EE2FF99", "#F7C53099", "#95CC5E99", "#D0DFE699", "#F79D1E99", "#748AA699", "#82451c", "#4b7751", "#5fa413" )
     key <- result$key
     value <- result$value
     print(ggplot2::ggplot(result, aes(fill=key, y=value, x=sampleCol)) +
@@ -216,7 +220,7 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
     if(exists("size.results")){
       percentbarchart.plot(size.results, "Size classes") #default: piled bars
     }
-    if(exists("guilds.results")){
+      if(exists("guilds.results")){
       percentbarchart.plot(guilds.results, "Guilds")#default: piled bars
     }
     if(exists("vandam.results")){
@@ -234,7 +238,6 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
       vdamAero <- vdamAero[1:(ncol(vdamAero)-1)]
       vdamTrophic <- vdamTrophic[1:(ncol(vdamTrophic)-1)]
     }
-
     if(exists("vdamSalinity")){
       percentbarchart.plot(vdamSalinity, "Salinity")
     }
@@ -253,7 +256,6 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
     if(exists("vdamTrophic")){
       percentbarchart.plot(vdamTrophic, "Trophic state")
     }
-
     if(exists("ips.results")){
       print(loli.plot(as.data.frame(ips.results[,1]), "IPS", 0, 5, samplenames=rownames(ips.results)) + geom_hline(yintercept=1, linetype="dashed", color = "darkgray", size=1)) #raw index. 0 = NA
       print(loli.plot(as.data.frame(ips.results[,2]), "IPS - Standardized", 0, 20, samplenames=rownames(ips.results))) #standard 20
@@ -294,7 +296,6 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
       print(loli.plot(as.data.frame(sla.results[,1]), "SLA", 0, 4, samplenames=rownames(sla.results))) #raw index
       print(loli.plot(as.data.frame(sla.results[,2]), "SLA - Standardized", 0, 20, samplenames=rownames(sla.results)) + geom_hline(yintercept=1, linetype="dashed", color = "darkgray", size=1)) #standard 20. 0 = NA
     }
-
     if(exists("spear.results")){
       print(loli.plot(as.data.frame(spear.results[,1]), "SPEAR", 0, 100, samplenames=rownames(spear.results))) #raw index
     }
@@ -313,7 +314,6 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
 
   #EXPORT AS CSV
   if (exportFormat == 1) {
-    print(exportFormat)
     if (singleResult == TRUE) {
       filename = paste(exportName, " - Results", ".csv")
       write.csv(singleTable, paste(resultsPath, "\\", filename, sep=""))
@@ -376,7 +376,6 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
 
   #EXPORT AS BOTH CSV AND INTERNAL DATAFRAME - Default
   if (exportFormat == 3) {
-    print(exportFormat)
     if (singleResult == TRUE) {
       filename = paste(exportName, " - Results", ".csv")
       write.csv(singleTable, paste(resultsPath, "\\", filename, sep=""))

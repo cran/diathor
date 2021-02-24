@@ -51,19 +51,27 @@ diat_spear <- function(resultLoad){
   #creates a species column with the rownames to fit in the script
   taxaInRA$species <- row.names(taxaInRA)
 
+  #remove the "-"
+  for (i in 1:nrow(spearDB)){
+    if (spearDB$spear_v[i]=="-"){
+      spearDB$spear_v[i] <- ""
+    }
+  }
+
   #exact matches species in input data to acronym from index
   taxaInRA$spear_v <- as.integer(spearDB$spear_v[match(taxaInRA$acronym, trimws(spearDB$acronym))])
 
-  # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaInRA)) {
-  #   if (is.na(taxaInRA$spear_v[i])){
-  #     taxaInRA$spear_v[i] <- spearDB$spear_v[match(trimws(rownames(taxaInRA[i,])), trimws(spearDB$fullspecies))]
-  #   }
-  # }
 
+
+  #the ones still not found (NA), try against fullspecies
+  for (i in 1:nrow(taxaInRA)) {
+    if (is.na(taxaInRA$spear_v[i])){
+      taxaInRA$spear_v[i] <- spearDB$spear_v[match(trimws(rownames(taxaInRA[i,])), trimws(spearDB$fullspecies))]
+    }
+  }
 
   #removes NA from taxaInRA
-  taxaInRA[is.na(taxaInRA)] <- 0
+  # taxaInRA[is.na(taxaInRA)] <- 0
 
   #gets the column named "acronym", everything before that is a sample
   lastcol <- which(colnames(taxaInRA)=="acronym")
@@ -79,11 +87,8 @@ diat_spear <- function(resultLoad){
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    SPEARtaxaused <- (length(which(spear_v * taxaInRA[,sampleNumber] > 0))*100 / length(spear_v))
-    #remove the NA
-    spear_v[is.na(spear_v)] = 0
-
-    SPEAR <- sum((log10(taxaInRA[,sampleNumber]+1)*as.double(spear_v)))/sum(log10(taxaInRA[,sampleNumber]+1)) #raw value
+    SPEARtaxaused <- (length(which(!is.na(spear_v))) * 100 / length(spear_v))
+    SPEAR <- sum((log10(taxaInRA[,sampleNumber]+1)*as.double(spear_v)), na.rm = TRUE)/sum(log10(taxaInRA[,sampleNumber]+1), na.rm = TRUE) #raw value
     SPEAR <- SPEAR * 100
     spear.results[sampleNumber, ] <- c(SPEAR, SPEARtaxaused)
     #update progressbar
@@ -105,7 +110,7 @@ diat_spear <- function(resultLoad){
 
   #TAXA INCLUSION
   #taxa with acronyms
-  taxaIncluded <- taxaInRA$species[which(taxaInRA$spear_v > 0)]
+  taxaIncluded <- taxaInRA$species[which(!is.na(taxaInRA$spear_v))]
   inclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa included.csv", sep=""))
   colnamesInclusionMatrix <- c(colnames(inclusionmatrix), "SPEAR")
   #creates a new data matrix to append the existing Taxa Included file

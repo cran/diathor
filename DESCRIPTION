@@ -1,7 +1,7 @@
 Package: diathor
 Type: Package
 Title: Calculate Ecological Information and Diatom Based Indices
-Version: 0.0.1
+Version: 0.0.4
 Authors@R: c(
     person("María Mercedes", "Nicolosi Gelis", email = "mercedesnicolosi@ilpla.edu.ar", role = "aut", comment = c(ORCID = "0000-0001-6324-7930")),
     person("María Belén", "Sathicq", email = "mbelen@ilpla.edu.ar", role = "aut", comment = c(ORCID = "0000-0002-3534-8950")),
@@ -25,17 +25,18 @@ Description:
     the TDI index by Kelly, & Whitton (1995, <doi:10.1007/BF00003802>), 
     and the SPEAR(herbicide) index by Wood, Mitrovic, Lim, Warne, Dunlop, & Kefford (2019, <doi:10.1016/j.ecolind.2018.12.035>).
 License: GNU General Public License
-BugReports: https://github.com/jcochero/DiaThor/issues
+BugReports: https://github.com/limnolab/DiaThor/issues
 Encoding: UTF-8
 LazyData: true
 RoxygenNote: 7.1.1
 Depends: R (>= 2.10), stringdist, vegan, ggplot2, tidyr
+Imports: data.table, purrr, stringr, tibble
 Suggests: knitr, rmarkdown
 NeedsCompilation: no
-Packaged: 2020-11-25 13:42:54 UTC; Juaco
+Packaged: 2021-02-23 23:22:10 UTC; Juaco
 Author: María Mercedes Nicolosi Gelis [aut]
     (<https://orcid.org/0000-0001-6324-7930>),
   María Belén Sathicq [aut] (<https://orcid.org/0000-0002-3534-8950>),
   Joaquín Cochero [cre] (<https://orcid.org/0000-0003-3957-6819>)
 Repository: CRAN
-Date/Publication: 2020-11-26 16:30:05 UTC
+Date/Publication: 2021-02-24 05:50:06 UTC

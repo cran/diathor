@@ -9,7 +9,7 @@
 A data frame with the ecological values for 475 species
 }
 \source{
-\url{https://doi.org/10.1023/A:1011415209445}
+\url{https://link.springer.com/article/10.1023/A:1011415209445}
 }
 \usage{
 data(idp)

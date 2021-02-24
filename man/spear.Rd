@@ -9,7 +9,7 @@
 A data frame with the ecological values for 285 species
 }
 \source{
-\url{https://doi.org/10.1016/j.ecolind.2018.12.035}
+\url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X18309683}
 }
 \usage{
 data(spear)

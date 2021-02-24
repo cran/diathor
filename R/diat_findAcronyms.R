@@ -73,8 +73,6 @@ diat_findAcronyms <- function(species_df, maxDistTaxa=2, resultsPath){
     print ("Searching for acronyms in exact match, please wait...")
     #exact match by species name (fast)
     species_df$acronym <- acronymDB$acronym[match(trimws(rownames(species_df)), acronymDB$species)]
-    #species_df_pre <- species_df
-    #species_df <- species_df_pre
     #with the unmatched exact, try heuristic
     print ("Searching for acronyms in heuristic match, please wait...")
     #PROGRESS BAR FOR HEURISTIC SEARCH OF ACRONYMS
@@ -97,37 +95,46 @@ diat_findAcronyms <- function(species_df, maxDistTaxa=2, resultsPath){
   acronymList <- trimws(species_df$acronym)
   #builds column with new name for species
   species_df$new_species <- NA
+  # species_df$new_acronym <- NA
 
   #UPDATE ACRONYMS
-  updatedacronyms <- 0
-  species_df$acronym <- as.character(species_df$acronym)
+   species_df$acronym <- as.character(species_df$acronym)
 
   #keepupdating <- T
   #while (keepupdating == TRUE){
   updatedacronyms <- 0
   for(i in 1:nrow(species_df)) {
-    if (!is.na(species_df$acronym[i])){ #there is an acronym for this species, try updating
+    if (is.na(species_df$acronym[i]) | species_df$acronym[i] == ""){ #there is no initial acronym for this species, despite being an "acronym" column in the file
+      #print(paste("No acronym found for",rownames(species_df[i,])))
+      #exact match by species name (fast)
+      newacronym <- acronymDB$acronym[match(trimws(rownames(species_df[i,])), acronymDB$species)]
+      #Else, search for heuristic
+      if (is.na(newacronym) | newacronym == ""){
+        newacronym <- acronymDB$acronym[stringdist::amatch(trimws(rownames(species_df[i,])), trimws(acronymDB$species), maxDist=maxDistTaxa, matchNA = FALSE)]
+      }
+      #assign the new acronym
+      species_df$acronym[i] <- newacronym
+      updatedacronyms <- updatedacronyms + 1
+
+    } else { #there is an acronym for this species, try updating
       updatedacronym <- acronymDB$new_acronym[match(species_df$acronym[i], acronymDB$acronym)] #get updated acronym
       updatedspecies <- acronymDB$new_species[match(species_df$acronym[i], acronymDB$acronym)] #get updated species
       if (is.na(updatedacronym) | updatedacronym == ""){
-        #print(paste("i=", i, " already exists"))
+        #all good so far
 
       } else{
-        #species_df$new_acronym[i] <- updatedacronym #update the acronym
+        # species_df$new_acronym[i] <- updatedacronym #update the acronym
+        species_df$acronym[i] <- updatedacronym
         species_df$new_species[i] <- updatedspecies #update the species
         updatedacronyms <- updatedacronyms + 1
       }
+
     }
   }
   if (updatedacronyms > 0){
     print(paste(updatedacronyms, "updated acronyms were found and exported"))
 
   }
-
-  #if (updatedacronyms==0){keepupdating <- F}
-  #}
-
-
 
   #taxa recognized by acronym
   print("Exporting list of species with the acronyms found by heuristic search. NA= not found")

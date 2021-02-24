@@ -51,73 +51,56 @@ diat_size <- function(resultLoad){
     return(size.results)
   }
 
+  sc1 <- sc2 <- sc3 <- sc4 <- sc5 <- Size_class_Indet <- Size_Taxa_used <- NULL
 
   #gets the column named "species", everything before that is a sample
   lastcol <- which(colnames(taxaInEco)=="species")
+  print("Calculating size classes")
 
-  #Convert taxaIn sample data to Relative Abundance data
   taxaInRA <- taxaInEco
-  for (i in 1:nrow(taxaInEco)){
-    for (j in 1:(lastcol-1)){
-      if (is.na(taxaInEco[i,j])){
-        taxaInRA[i,j] <- 0
-      } else {
-        taxaInRA[i,j] <- (taxaInEco[i,j]*100)/sum(taxaInEco[,j])
-      }
-    }
-  }
-
-
-
-  #gets sample names
-  sampleNames <- colnames(taxaInRA[1:(lastcol-1)])
-
-  ##### SIZE CLASSES
-  #creates results dataframe
-  size_labels <- c("Size class 1", "Size class 2", "Size class 3", "Size class 4", "Size class 5", "Size class Indet", "Size Taxa used")
-  size.results <- data.frame(matrix(ncol = 7, nrow = (lastcol-1)))
-  colnames(size.results) <- size_labels
-
-  #finds the size class column
-  size_v <-  taxaInRA[,startsWith(colnames(taxaInRA), "classe_de_taille")]
-  #remove the NA
+  taxaInRA_samples = taxaInRA[, 1:(lastcol - 1)]
+  data.table::setDT(taxaInRA_samples)
+  setnafill(taxaInRA_samples, fill = 0)
+  rel_abu  = apply(taxaInRA_samples, 2, function(x)
+    round(x / sum(x) * 100, 2))
+  taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
+  sampleNames = colnames(taxaInRA[1:(lastcol - 1)])
+  data.table::setDT(taxaInRA)
+  size_v = taxaInRA[, which(grepl(pattern = "classe_de_taille", names(taxaInRA))), with = FALSE]
   size_v[is.na(size_v)] = 0
 
-  #PROGRESS BAR
-  print("Calculating size classes")
-  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
-
-    #sum abundances per category
-    size_cat1 <- sum(taxaInRA[which(size_v == 1),sampleNumber])
-    size_cat2 <- sum(taxaInRA[which(size_v == 2),sampleNumber])
-    size_cat3 <- sum(taxaInRA[which(size_v == 3),sampleNumber])
-    size_cat4 <- sum(taxaInRA[which(size_v == 4),sampleNumber])
-    size_cat5 <- sum(taxaInRA[which(size_v == 5),sampleNumber])
-    size_indet <- 100 - sum(size_cat1, size_cat2, size_cat3, size_cat4, size_cat5) #calculates indetermined
-    #round numbers and remove negatives
-    if (size_indet<0){size_indet <- 0}
-    size_cat1 <- round(size_cat1, digits=3)
-    size_cat2 <- round(size_cat2, digits=3)
-    size_cat3 <- round(size_cat3, digits=3)
-    size_cat4 <- round(size_cat4, digits=3)
-    size_cat5 <- round(size_cat5, digits=3)
-    size_indet <- round(size_indet, digits=3)
-
-    #how many taxa will be used to calculate? Taxa that have a valid indicator value and abundance > 0
-    sizetaxaused <- length(which(size_v != 0 & taxaInRA[,sampleNumber] > 0))
-    #which taxa were used? to export
-    sizetaxaused_taxa <- taxaInRA[which(size_v != 0 & taxaInRA[,sampleNumber] > 0),"species"]
-    #labels and exports dataframe with results, in a single row to add the rest of samples as rows
-    size_values <- c(size_cat1, size_cat2, size_cat3, size_cat4, size_cat5, size_indet, sizetaxaused)
-    size.results[sampleNumber, ] <- size_values
-    #update progressbar
-    setTxtProgressBar(pb, sampleNumber)
-
-  }
-  #close progressbar
-  close(pb)
-  ##### END SIZE CLASSES
+  size.results = data.table(
+    sc1 = unlist(taxaInRA[which(size_v == 1), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
+                                                                                             1)]),
+    sc2 = unlist(taxaInRA[which(size_v == 2), lapply(.SD, sum, na.rm =
+                                                       TRUE), .SDcols = 1:(lastcol - 1)]),
+    sc3 = unlist(taxaInRA[which(size_v == 3), lapply(.SD, sum, na.rm =
+                                                       TRUE), .SDcols = 1:(lastcol - 1)]),
+    sc4 = unlist(taxaInRA[which(size_v == 4), lapply(.SD, sum, na.rm =
+                                                       TRUE), .SDcols = 1:(lastcol - 1)]),
+    sc5 = unlist(taxaInRA[which(size_v == 5), lapply(.SD, sum, na.rm =
+                                                       TRUE), .SDcols = 1:(lastcol - 1)])
+  )
+  size.results[, `Size_class_Indet` := round(100 - (sc1 + sc2 + sc3 + sc4 + sc5), 1)]
+  size.results[, `Size_Taxa_used` := numeric(lastcol - 1)]
+  size.results[`Size_class_Indet` < 0, `Size_class_Indet` := 0]
+  te2 = purrr::map(.x = 1:(lastcol - 1),
+                   .f = ~ taxaInRA_samples[, .x, with = F] > 0 & size_v != 0)
+  te3 = matrix(unlist(te2), ncol = lastcol - 1, byrow = TRUE) %>% as.data.frame()
+  names(te3) = names(taxaInRA_samples)
+  size.results[, `Size_Taxa_used` := colSums(te3)]
+  names(size.results) = c(
+    "Size class 1",
+    "Size class 2",
+    "Size class 3",
+    "Size class 4",
+    "Size class 5",
+    "Size class Indet",
+    "Size Taxa used"
+  )
+  size.results <- as.data.frame(size.results) #need to convert it to dataframe explicitly to plot
   return(size.results)
+
+
 }
 

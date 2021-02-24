@@ -57,79 +57,82 @@ diat_guilds <- function(resultLoad){
 
   #Convert taxaIn sample data to Relative Abundance data
   taxaInRA <- taxaInEco
-  for (i in 1:nrow(taxaInEco)){
-    for (j in 1:(lastcol-1)){
-      if (is.na(taxaInEco[i,j])){
-        taxaInRA[i,j] <- 0
-      } else {
-        taxaInRA[i,j] <- (taxaInEco[i,j]*100)/sum(taxaInEco[,j])
-      }
-    }
-  }
 
-  #removes NA from taxaIn
-  taxaInRA[is.na(taxaInRA)] <- 0
+  ###### MODIFIED BY JJ
+  taxaInRA_samples = taxaInRA[, 1:(lastcol - 1)]
+  setDT(taxaInRA_samples)
+  # replace NA with 0
+  setnafill(taxaInRA_samples, fill = 0)
+  #compute relative abundances
+  rel_abu  = apply(taxaInRA_samples, 2, function(x)
+    round(x / sum(x) * 100, 2))
+  # combine Taxa and other ecological data agian.
+  taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
+  # convert from data.table to tibble
+  taxaInRA = tibble::tibble(taxaInRA)
+  #taxaInRA[is.na(taxaInRA)] <- 0
 
-  #creates results dataframe
-  guild_labels <- c("Guild: HP", "Guild: LP", "Guild: Mot", "Guild: Plank", "Guild: Indet", "Guilds Taxa used")
-  guilds.results <- data.frame(matrix(ncol = 6, nrow = (lastcol-1)))
+  ## -- prepare loop
+  guild_labels <- c("Guild: HP", "Guild: LP", "Guild: Mot",
+                    "Guild: Plank", "Guild: Indet", "Guilds Taxa used")
+  guilds.results <- data.frame(matrix(ncol = 6, nrow = (lastcol -
+                                                          1)))
+
+
   colnames(guilds.results) <- guild_labels
-
-  #PROGRESS BAR
   print("Calculating ecological guilds")
-  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
+  pb <- txtProgressBar(min = 1, max = (lastcol - 1), style = 3)
 
-    guild_HP <- taxaInRA[,startsWith(colnames(taxaInRA), "high_profile_guild")]
-    guild_LP <- taxaInRA[,startsWith(colnames(taxaInRA), "low_profile_guild")]
-    guild_Mot <- taxaInRA[,startsWith(colnames(taxaInRA), "motile_guild")]
-    guild_Plank <- taxaInRA[,startsWith(colnames(taxaInRA), "euplanctonic_guild")]
-    #remove the NA
+  ## -- loop to fill guild table
+  for (sampleNumber in 1:(lastcol - 1)) {
+    # get columns with each guild and remove NAs
+    guild_HP    = taxaInRA[, startsWith(colnames(taxaInRA), "high_profile_guild")]
+    guild_LP    = taxaInRA[, startsWith(colnames(taxaInRA), "low_profile_guild")]
+    guild_Mot   = taxaInRA[, startsWith(colnames(taxaInRA), "motile_guild")]
+    guild_Plank = taxaInRA[, startsWith(colnames(taxaInRA), "euplanctonic_guild")]
     guild_HP[is.na(guild_HP)] = 0
     guild_LP[is.na(guild_LP)] = 0
     guild_Mot[is.na(guild_Mot)] = 0
     guild_Plank[is.na(guild_Plank)] = 0
-
-    #sum abundances per guild
-    guild_HP_ab <- sum(taxaInRA[which(guild_HP == 1),sampleNumber])
-    guild_LP_ab <- sum(taxaInRA[which(guild_LP == 1),sampleNumber])
-    guild_Mot_ab <- sum(taxaInRA[which(guild_Mot == 1),sampleNumber])
-    guild_Plank_ab <- sum(taxaInRA[which(guild_Plank == 1),sampleNumber])
-    guild_indet <- 100 - sum(guild_HP_ab, guild_LP_ab, guild_Mot_ab, guild_Plank_ab) #calculates indetermined
-
-
-    #round numbers and remove negatives
-    if (guild_indet<0){guild_indet <- 0}
-    guild_HP_ab <- round(guild_HP_ab, digits=3)
-    guild_LP_ab <- round(guild_LP_ab, digits=3)
-    guild_Mot_ab <- round(guild_Mot_ab, digits=3)
-    guild_Plank_ab <- round(guild_Plank_ab, digits=3)
-    guild_indet <- round(guild_indet, digits=3)
-
-    #how many taxa will be used to calculate? Taxa that have a valid indicator value and abundance > 0
-    guildtaxaused <- length(which(guild_HP == 1 & taxaInRA[,sampleNumber] > 0))
-    guildtaxaused <- guildtaxaused + length(which(guild_LP == 1 & taxaInRA[,sampleNumber] > 0))
-    guildtaxaused <- guildtaxaused + length(which(guild_Mot == 1 & taxaInRA[,sampleNumber] > 0))
-    guildtaxaused <- guildtaxaused + length(which(guild_Plank == 1 & taxaInRA[,sampleNumber] > 0))
-
-    #which taxa were used? to export
-    guildtaxaused_taxa <- taxaInRA[which(guild_HP == 1 & taxaInRA[,sampleNumber] > 0),"species"]
-    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_LP == 1 & taxaInRA[,sampleNumber] > 0),"species"])
-    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_Mot == 1 & taxaInRA[,sampleNumber] > 0),"species"])
-    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_Plank == 1 & taxaInRA[,sampleNumber] > 0),"species"])
-
-    #labels and exports dataframe with results, in a single row to add the rest of samples as rows
-
-    guild_values <- c(guild_HP_ab, guild_LP_ab, guild_Mot_ab, guild_Plank_ab, guild_indet, guildtaxaused)
+    #total abundance for each guild in each sample
+    guild_HP_ab <- sum(taxaInRA[which(guild_HP == 1), sampleNumber, with = F], na.rm = T)
+    guild_LP_ab <- sum(taxaInRA[which(guild_LP == 1), sampleNumber, with = F], na.rm = T)
+    guild_Mot_ab <- sum(taxaInRA[which(guild_Mot == 1), sampleNumber, with = F], na.rm = T)
+    guild_Plank_ab <- sum(taxaInRA[which(guild_Plank == 1), sampleNumber, with = F], na.rm = T)
+    guild_indet <- 100 - sum(guild_HP_ab, guild_LP_ab, guild_Mot_ab, guild_Plank_ab)
+    if (guild_indet < 0) {
+      guild_indet <- 0
+    }
+    #% abundance for each guild
+    guild_HP_ab <- round(guild_HP_ab, digits = 3)
+    guild_LP_ab <- round(guild_LP_ab, digits = 3)
+    guild_Mot_ab <- round(guild_Mot_ab, digits = 3)
+    guild_Plank_ab <- round(guild_Plank_ab, digits = 3)
+    guild_indet <- round(guild_indet, digits = 3)
+    #taxa used for each guild
+    guildtaxaused <- length(which(guild_HP == 1 & taxaInRA[, sampleNumber, with =F] > 0))
+    guildtaxaused <- guildtaxaused + length(which(guild_LP ==
+                                                    1 & taxaInRA[, sampleNumber] > 0))
+    guildtaxaused <- guildtaxaused + length(which(guild_Mot ==
+                                                    1 & taxaInRA[, sampleNumber] > 0))
+    guildtaxaused <- guildtaxaused + length(which(guild_Plank ==
+                                                    1 & taxaInRA[, sampleNumber] > 0))
+    guildtaxaused_taxa <- taxaInRA[which(guild_HP == 1 &
+                                           taxaInRA[, sampleNumber] > 0), "species"]
+    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_LP ==
+                                                                 1 & taxaInRA[, sampleNumber] > 0), "species"])
+    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_Mot ==
+                                                                 1 & taxaInRA[, sampleNumber] > 0), "species"])
+    guildtaxaused_taxa <- c(guildtaxaused_taxa, taxaInRA[which(guild_Plank ==
+                                                                 1 & taxaInRA[, sampleNumber] > 0), "species"])
+    guild_values <- c(guild_HP_ab, guild_LP_ab, guild_Mot_ab,
+                      guild_Plank_ab, guild_indet, guildtaxaused)
     guilds.results[sampleNumber, ] <- guild_values
-    #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
-  #close progressbar
   close(pb)
-
-  ##### END GUILDS
   return(guilds.results)
+
 
 }
 

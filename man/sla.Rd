@@ -9,7 +9,7 @@
 A data frame with the ecological values for 976 species
 }
 \source{
-\url{https://doi.org/10.1002/aheh.19860140519}
+\url{https://onlinelibrary.wiley.com/doi/abs/10.1002/aheh.19860140519}
 }
 \usage{
 data(sla)

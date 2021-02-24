@@ -9,7 +9,7 @@
 A data frame with the ecological values for 194 species
 }
 \source{
-\url{https://doi.org/10.1007/BF00028033}
+\url{https://link.springer.com/article/10.1007/BF00028033}
 }
 \usage{
 data(idap)

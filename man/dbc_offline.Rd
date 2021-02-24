@@ -9,7 +9,7 @@
 A data frame with ecological and morphological information for 8066 diatoms
 }
 \source{
-\url{https://doi.org/10.1051/kmae/2012018}
+\url{https://www.kmae-journal.org/articles/kmae/abs/2012/03/kmae120025/kmae120025.html}
 }
 \usage{
 data(dbc_offline)

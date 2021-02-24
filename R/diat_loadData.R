@@ -69,6 +69,24 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   #species_df <- species_df[order(row.names(species_df)),] #reorder alphabetically
 
 
+  #Find empty samples
+  colvector <- c()
+  for (i in 1:ncol(species_df)){
+    if (is.numeric(species_df[,i])){
+      if (colSums(species_df[i], na.rm=TRUE) == 0){
+        colvector <- c(colvector, i)
+      }
+    }
+  }
+  if (length(colvector) != 0){
+    if (!is.na(colvector)){
+      print(paste("Empty sample removed, column #", colvector))
+    }
+    species_df <- species_df[,-colvector] #entry dataframe without empty samples
+
+  }
+
+
   # Find acronyms or update then
   print("Finding and updating acronyms")
   species_df <- diat_findAcronyms(species_df, maxDistTaxa, resultsPath)
@@ -89,7 +107,7 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
     #compare both. If updates are needed, attempt them
     if (version == intversion){
       #updates are not needed
-      print ("No updates needed for the 'Diat.barcode' database. Proceeding")
+      print ("No updates needed for the 'Diat.barcode' database. Proceeding!")
       #load("data/dbc_offline.RData") ##takes the internal database
       #dbc <- dbc_offline
       dbc <- diathor::dbc_offline
@@ -99,12 +117,15 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
       ########--------  Diat.Barcode download attempt. If it fails, tries to use internal database
       ## WARNING: CRAN package does not auto-update the Diat.Barcode database
       print("The diatom database in DiaThor is out of date")
+
+      ###### THIS SECTION IS FOR THE CRAN PROJECT ONLY
       print("The CRAN version of the package does not auto-update the internal database. But the GitHub version does!")
       print("Using internal database, 'Diat.barcode' v.9.0 published on 14-09-2020")
       dbc <- diathor::dbc_offline
+      ###### END OF CRAN VERSION
 
       ###### THIS SECTION IS FOR THE GITHUB PROJECT ONLY
-      #print("Attempting to download diat.barcode from website")
+      # print("Attempting to download diat.barcode from website")
       # dbc <- diatbarcode::get_diatbarcode(version = "last") #loads the latest version of diat.barcode
       # if (exists("dbc")){ #it if was able to download the new version, proceed
       #   print("Latest version of Diat.barcode succesfully downloaded. Remember to credit accordingly!")
@@ -112,7 +133,6 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
       #   print("Latest version of Diat.barcode cannot be downloaded")
       #   print("Using internal database, Diat.barcode v.8.1 published on 10-06-2020. It might need to be updated")
       #   #load("data/dbc_offline.RData") ##takes the internal database
-      #   #dbc <- dbc_offline
       #   dbc <- dbc_offline
       # }
       ###### END OF GITHUB VERSION
@@ -180,22 +200,29 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   taxaIncluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp != "Not found")])
   taxaExcluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp == "Not found")])
 
-  #remove the acronym col and move it to the back
+  #remove the acronym col and updated acronym col and move it to the back
   acronym_col <- taxaIn$acronym
   acronym_col2 <- taxaInEco$acronym
+  # newacronym_col <- taxaIn$new_acronym
+  # newacronym_col2 <- taxaInEco$new_acronym
   acronym_col <- replace(acronym_col, acronym_col=="0", NA)
   acronym_col2 <- replace(acronym_col2, acronym_col2=="0", NA)
+  # newacronym_col <- replace(newacronym_col, newacronym_col=="0", NA)
+  # newacronym_col2 <- replace(newacronym_col2, newacronym_col2=="0", NA)
   taxaIn<- taxaIn[ , !(names(taxaIn) == "acronym")] #removes the acronym names column
   taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "acronym")] #removes the acronym names column
+  # taxaIn<- taxaIn[ , !(names(taxaIn) == "new_acronym")] #removes the acronym names column
+  # taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "new_acronym")] #removes the acronym names column
   taxaInEco$acronym <- acronym_col2
   taxaIn$acronym <- acronym_col
+  # taxaInEco$new_acronym <- newacronym_col2
+  # taxaIn$new_acronym <- newacronym_col
 
-  #remove the updated species col and move it to the back in both taxaIn
+  #remove the updated species col  and move it to the back in both taxaIn
   newspecies_col <- taxaIn$new_species
   newspecies_col <- replace(newspecies_col, newspecies_col=="0", NA)
   taxaIn<- taxaIn[ , !(names(taxaIn) == "new_species")] #removes the newspecies_col
   taxaIn$new_species <- newspecies_col
-
   newspecies_col2 <- taxaInEco$new_species
   newspecies_col2 <- replace(newspecies_col2, newspecies_col2=="0", NA)
   taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "new_species")] #removes the newspecies_col
@@ -236,19 +263,14 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
 
   #CREATES A RELATIVE ABUNDANCE MATRIX AS WELL FOR THOSE INDICES THAT USE IT
   #Convert taxaIn sample data to Relative Abundance data
-  if(isRelAb==FALSE){ #pass parameter when in function
+  if (isRelAb == FALSE) {
     taxaInRA <- taxaIn
     print("Converting species' densities to relative abundance")
-    for (i in 1:nrow(taxaIn)){
-      for (j in 1:(lastcol-1)){
-        if (is.na(taxaIn[i,j])){
-          taxaInRA[i,j] <- 0
-        } else {
-          taxaInRA[i,j] <- (taxaIn[i,j]*100)/sum(taxaIn[,j])
-        }
-      }
-    }
-  } else {
+    rel_abu  = apply(taxaInRA[,1:(lastcol-1)], 2, function(x)
+      round(x / sum(x) * 100, 2))
+    taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
+  }
+  else {
     taxaInRA <- taxaIn
   }
 
