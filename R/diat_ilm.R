@@ -55,20 +55,22 @@ diat_ilm <- function(resultLoad){
 
 
   #exact matches species in input data to acronym from index
-  taxaIn$ilm_v <- ilmDB$ilm_v[match(taxaIn$acronym, trimws(ilmDB$acronym))]
-  taxaIn$ilm_s <- ilmDB$ilm_s[match(taxaIn$acronym, trimws(ilmDB$acronym))]
+  # taxaIn$ilm_v <- ilmDB$ilm_v[match(taxaIn$acronym, trimws(ilmDB$acronym))]
+  # taxaIn$ilm_s <- ilmDB$ilm_s[match(taxaIn$acronym, trimws(ilmDB$acronym))]
 
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$ilm_s[i]) | is.na(taxaIn$ilm_v[i])){
-  #     taxaIn$ilm_v[i] <- ilmDB$ilm_v[match(trimws(rownames(taxaIn[i,])), trimws(ilmDB$fullspecies))]
-  #     taxaIn$ilm_s[i] <- ilmDB$ilm_s[match(trimws(rownames(taxaIn[i,])), trimws(ilmDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$ilm_v <- NA
+  taxaIn$ilm_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$ilm_s[i]) | is.na(taxaIn$ilm_v[i])){
+      taxaIn$ilm_v[i] <- ilmDB$ilm_v[match(trimws(rownames(taxaIn[i,])), trimws(ilmDB$fullspecies))]
+      taxaIn$ilm_s[i] <- ilmDB$ilm_s[match(trimws(rownames(taxaIn[i,])), trimws(ilmDB$fullspecies))]
+    }
+  }
 
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------ILM INDEX START --------#############
   print("Calculating ILM index")

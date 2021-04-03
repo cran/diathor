@@ -48,8 +48,8 @@ diat_tdi <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #Loads the species list specific for this index
   #tdiDB <- read.csv("../Indices/tdi.csv") #uses the external csv file
@@ -64,9 +64,18 @@ diat_tdi <- function(resultLoad){
   #if acronyms exist, use them, its more precise
   #if there is an acronym column, it removes it and stores it for later
   #exact matches species in input data to acronym from index
-  taxaIn$tdi_s <- tdiDB$tdi_s[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
-  taxaIn$tdi_v <- tdiDB$tdi_v[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
+  # taxaIn$tdi_s <- tdiDB$tdi_s[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
+  # taxaIn$tdi_v <- tdiDB$tdi_v[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
 
+  # #the ones still not found (NA), try against fullspecies
+  taxaIn$tdi_v <- NA
+  taxaIn$tdi_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$tdi_s[i]) | is.na(taxaIn$tdi_v[i])){
+      taxaIn$tdi_v[i] <- tdiDB$tdi_v[match(trimws(rownames(taxaIn[i,])), trimws(tdiDB$fullspecies))]
+      taxaIn$tdi_s[i] <- tdiDB$tdi_s[match(trimws(rownames(taxaIn[i,])), trimws(tdiDB$fullspecies))]
+    }
+  }
 
   #######--------TDI INDEX START --------#############
   print("Calculating TDI index")

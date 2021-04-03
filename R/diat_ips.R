@@ -46,8 +46,8 @@ diat_ips <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #Loads the species list specific for this index
   #idpDB <- read.csv("../Indices/ips.csv") #uses the external csv file
@@ -58,9 +58,21 @@ diat_ips <- function(resultLoad){
 
   #if acronyms exist, use them, its more precise
   #if there is an acronym column, it removes it and stores it for later
-  #exact matches species in input data to acronym from index
-  taxaIn$ips_s <- ipsDB$ips_s[match(trimws(taxaIn$acronym), trimws(ipsDB$acronym))]
-  taxaIn$ips_v <- ipsDB$ips_v[match(trimws(taxaIn$acronym), trimws(ipsDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$ips_s <- ipsDB$ips_s[match(trimws(taxaIn$acronym), trimws(ipsDB$acronym))]
+  # taxaIn$ips_v <- ipsDB$ips_v[match(trimws(taxaIn$acronym), trimws(ipsDB$acronym))]
+
+
+  # #the ones still not found (NA), try against fullspecies
+  taxaIn$ips_v <- NA
+  taxaIn$ips_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$ips_s[i]) | is.na(taxaIn$ips_v[i])){
+      taxaIn$ips_v[i] <- ipsDB$ips_v[match(trimws(rownames(taxaIn[i,])), trimws(ipsDB$fullspecies))]
+      taxaIn$ips_s[i] <- ipsDB$ips_s[match(trimws(rownames(taxaIn[i,])), trimws(ipsDB$fullspecies))]
+    }
+  }
+
 
   #######--------IPS INDEX START (indice poluto sensible)--------#############
   print("Calculating IPS index")

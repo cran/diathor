@@ -59,11 +59,12 @@ diat_spear <- function(resultLoad){
   }
 
   #exact matches species in input data to acronym from index
-  taxaInRA$spear_v <- as.integer(spearDB$spear_v[match(taxaInRA$acronym, trimws(spearDB$acronym))])
+  # taxaInRA$spear_v <- as.integer(spearDB$spear_v[match(taxaInRA$acronym, trimws(spearDB$acronym))])
 
 
 
   #the ones still not found (NA), try against fullspecies
+  taxaInRA$spear_v <- NA
   for (i in 1:nrow(taxaInRA)) {
     if (is.na(taxaInRA$spear_v[i])){
       taxaInRA$spear_v[i] <- spearDB$spear_v[match(trimws(rownames(taxaInRA[i,])), trimws(spearDB$fullspecies))]
@@ -73,8 +74,8 @@ diat_spear <- function(resultLoad){
   #removes NA from taxaInRA
   # taxaInRA[is.na(taxaInRA)] <- 0
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaInRA)=="acronym")
+  #gets the column named "species", everything before that is a sample
+  lastcol <- which(colnames(taxaInRA)=="species") -1
 
   #######--------SPEAR INDEX START --------#############
   print("Calculating SPEAR index")
@@ -88,7 +89,7 @@ diat_spear <- function(resultLoad){
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     SPEARtaxaused <- (length(which(!is.na(spear_v))) * 100 / length(spear_v))
-    SPEAR <- sum((log10(taxaInRA[,sampleNumber]+1)*as.double(spear_v)), na.rm = TRUE)/sum(log10(taxaInRA[,sampleNumber]+1), na.rm = TRUE) #raw value
+    SPEAR <- sum((log10(as.double(taxaInRA[,sampleNumber])+1)*as.double(spear_v)), na.rm = TRUE)/sum(log10(as.double(taxaInRA[,sampleNumber])+1), na.rm = TRUE) #raw value
     SPEAR <- SPEAR * 100
     spear.results[sampleNumber, ] <- c(SPEAR, SPEARtaxaused)
     #update progressbar

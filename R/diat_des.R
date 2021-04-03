@@ -51,29 +51,28 @@ diat_des <- function(resultLoad){
   desDB <- diathor::des
 
   ##NEWEST CORRECTIONS
-  #creates a species column with the rownames to fit in the script
+
+   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
   #if acronyms exist, use them, its more precise
 
-  #exact matches species in input data to acronym from index
-  taxaIn$des_v <- desDB$des_v[match(taxaIn$acronym, trimws(desDB$acronym))]
-  taxaIn$des_s <- desDB$des_s[match(taxaIn$acronym, trimws(desDB$acronym))]
-
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$des_s[i]) | is.na(taxaIn$des_v[i])){
-  #     taxaIn$des_v[i] <- desDB$des_v[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
-  #     taxaIn$des_s[i] <- desDB$des_s[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$des_v <- NA
+  taxaIn$des_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$des_s[i]) | is.na(taxaIn$des_v[i])){
+      taxaIn$des_v[i] <- desDB$des_v[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
+      taxaIn$des_s[i] <- desDB$des_s[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
+    }
+  }
 
   ### FINISH NEW CORRECTIONS
 
   #removes NA from taxaIn
   taxaIn[is.na(taxaIn)] <- 0
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------DES INDEX START --------#############
   print("Calculating DES index")
@@ -106,6 +105,7 @@ diat_des <- function(resultLoad){
   precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
   precisionmatrix <- cbind(precisionmatrix, des.results$Precision)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
+
   names(precisionmatrix)[names(precisionmatrix)=="des.results$Precision"] <- "DES"
   write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
   #END PRECISION

@@ -7,8 +7,6 @@
 #' Loads the CSV or dataframe file, sets the Output folder for the package, and conducts both an exact and an heuristic search of the species' names.
 #'
 #' The input file for the package is a dataframe or an external CSV file. Species should be listed as rows, with species' names in column 1 (column name should be "species")
-#' If the input data contains a column named "acronym", the package will use that column to match species with their ecological values. This is more accurate than the
-#' heuristic search of species' names.
 #' The other columns (samples) have to contain the abundance of each species (relative or absolute) in each sample.
 #' The first row of the file has to contain the headers with the sample names. Remember that a column named "species" is mandatory, containing the species' names
 #' If a dataframe is not specified as a parameter (species_df), the package will show a dialog box to search for the CSV file
@@ -86,10 +84,11 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
 
   }
 
+  sampleNames <- colnames(species_df) #Saves the names of the samples
 
-  # Find acronyms or update then
-  print("Finding and updating acronyms")
-  species_df <- diat_findAcronyms(species_df, maxDistTaxa, resultsPath)
+  #SINCE THE ACRONYM COLUMN WAS REMOVED, WE HAVE TO CREATE A new_species COLUMN
+  species_df$new_species <- NA
+  species_df$new_species <- rownames(species_df)
 
   #removes NA in abundance data
   species_df[is.na(species_df)] <- 0
@@ -159,7 +158,9 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   # first occurence. Ecological indices usually match in all strains of the same species
   #fuzzy matching
 
-  #NEW SEARCH
+
+
+  #SEARCH
   rownames(species_df) <- trimws(rownames(species_df))
   taxaInSp <- as.data.frame(matrix(nrow=nrow(species_df), ncol = (ncol(species_df)+ncol(ecodata))))
   #species_df section
@@ -200,24 +201,6 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   taxaIncluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp != "Not found")])
   taxaExcluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp == "Not found")])
 
-  #remove the acronym col and updated acronym col and move it to the back
-  acronym_col <- taxaIn$acronym
-  acronym_col2 <- taxaInEco$acronym
-  # newacronym_col <- taxaIn$new_acronym
-  # newacronym_col2 <- taxaInEco$new_acronym
-  acronym_col <- replace(acronym_col, acronym_col=="0", NA)
-  acronym_col2 <- replace(acronym_col2, acronym_col2=="0", NA)
-  # newacronym_col <- replace(newacronym_col, newacronym_col=="0", NA)
-  # newacronym_col2 <- replace(newacronym_col2, newacronym_col2=="0", NA)
-  taxaIn<- taxaIn[ , !(names(taxaIn) == "acronym")] #removes the acronym names column
-  taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "acronym")] #removes the acronym names column
-  # taxaIn<- taxaIn[ , !(names(taxaIn) == "new_acronym")] #removes the acronym names column
-  # taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "new_acronym")] #removes the acronym names column
-  taxaInEco$acronym <- acronym_col2
-  taxaIn$acronym <- acronym_col
-  # taxaInEco$new_acronym <- newacronym_col2
-  # taxaIn$new_acronym <- newacronym_col
-
   #remove the updated species col  and move it to the back in both taxaIn
   newspecies_col <- taxaIn$new_species
   newspecies_col <- replace(newspecies_col, newspecies_col=="0", NA)
@@ -228,8 +211,8 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "new_species")] #removes the newspecies_col
   taxaInEco$new_species <- newspecies_col2
 
-  sampleNames <- colnames(taxaIn) #Saves the names of the samples
-  removeelem <- c("acronym","new_species","species") #Removes columns not samples
+
+  removeelem <- c("species") #Removes columns not samples
   sampleNames <- sampleNames[!(sampleNames %in% removeelem)]
 
 
@@ -255,8 +238,8 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
 
   write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
 
-  #gets the column named "acronym" everything before that column should be a sample with abundance data
-  lastcol = which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species" everything before that column should be a sample with abundance data
+  lastcol = which(colnames(taxaIn)=="new_species")
   #
   # #gets sample names
   # sampleNames <- colnames(taxaIn[1:(lastcol-1)])
@@ -269,8 +252,7 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
     rel_abu  = apply(taxaInRA[,1:(lastcol-1)], 2, function(x)
       round(x / sum(x) * 100, 2))
     taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
-  }
-  else {
+  } else {
     taxaInRA <- taxaIn
   }
 

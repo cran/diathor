@@ -50,20 +50,22 @@ diat_epid <- function(resultLoad){
   taxaIn$species <- row.names(taxaIn)
   #if acronyms exist, use them, its more precise
 
-  #exact matches species in input data to acronym from index
-  taxaIn$epid_v <- epidDB$epid_v[match(taxaIn$acronym, trimws(epidDB$acronym))]
-  taxaIn$epid_s <- epidDB$epid_s[match(taxaIn$acronym, trimws(epidDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$epid_v <- epidDB$epid_v[match(taxaIn$acronym, trimws(epidDB$acronym))]
+  # taxaIn$epid_s <- epidDB$epid_s[match(taxaIn$acronym, trimws(epidDB$acronym))]
   #
   #   #the ones still not found (NA), try against fullspecies
-  #   for (i in 1:nrow(taxaIn)) {
-  #     if (is.na(taxaIn$epid_s[i]) | is.na(taxaIn$epid_v[i])){
-  #       taxaIn$epid_v[i] <- epidDB$epid_v[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
-  #       taxaIn$epid_s[i] <- epidDB$epid_s[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
-  #     }
-  #   }
+  taxaIn$epid_v <- NA
+  taxaIn$epid_s <- NA
+    for (i in 1:nrow(taxaIn)) {
+      if (is.na(taxaIn$epid_s[i]) | is.na(taxaIn$epid_v[i])){
+        taxaIn$epid_v[i] <- epidDB$epid_v[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
+        taxaIn$epid_s[i] <- epidDB$epid_s[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
+      }
+    }
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------EPID INDEX START --------#############
   print("Calculating EPID index")

@@ -58,24 +58,26 @@ diat_lobo <- function(resultLoad){
   taxaIn$species <- row.names(taxaIn)
 
 
-  #exact matches species in input data to acronym from index
-  taxaIn$lobo_v <- loboDB$lobo_v[match(taxaIn$acronym, trimws(loboDB$acronym))]
-  taxaIn$lobo_s <- loboDB$lobo_s[match(taxaIn$acronym, trimws(loboDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$lobo_v <- loboDB$lobo_v[match(taxaIn$acronym, trimws(loboDB$acronym))]
+  # taxaIn$lobo_s <- loboDB$lobo_s[match(taxaIn$acronym, trimws(loboDB$acronym))]
 
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$lobo_s[i]) | is.na(taxaIn$lobo_v[i])){
-  #     taxaIn$lobo_v[i] <- loboDB$lobo_v[match(trimws(rownames(taxaIn[i,])), trimws(loboDB$fullspecies))]
-  #     taxaIn$lobo_s[i] <- loboDB$lobo_s[match(trimws(rownames(taxaIn[i,])), trimws(loboDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$lobo_v <- NA
+  taxaIn$lobo_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$lobo_s[i]) | is.na(taxaIn$lobo_v[i])){
+      taxaIn$lobo_v[i] <- loboDB$lobo_v[match(trimws(rownames(taxaIn[i,])), trimws(loboDB$fullspecies))]
+      taxaIn$lobo_s[i] <- loboDB$lobo_s[match(trimws(rownames(taxaIn[i,])), trimws(loboDB$fullspecies))]
+    }
+  }
 
 
   #removes NA from taxaIn
   taxaIn[is.na(taxaIn)] <- 0
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------LOBO INDEX START --------#############
   print("Calculating LOBO index")

@@ -6,7 +6,7 @@
 \alias{diaThor}
 \title{DiaThor: A package to calculate multiple diatom-based biotic indices}
 \description{
-The package calculates multiple biotic indices using diatoms from environmental samples. Diatom species are recognized by their acronym or by their species' name using a heuristic search, and their ecological data is retrieved from multiple sources.
+The package calculates multiple biotic indices using diatoms from environmental samples. Diatom species are recognized by their species' name using a heuristic search, and their ecological data is retrieved from multiple sources.
 Morphological information about the species is retrieved from the 'Diat.Barcode' project:
 \itemize{
 \item Rimet F., Gusev E., Kahlert M., Kelly M., Kulikovskiy M., Maltsev Y., Mann D., Pfannkuchen M., Trobajo R., Vasselon V., Zimmermann J., Bouchez A., 2019. Diat.barcode, an open-access curated barcode library for diatoms. Scientific Reports. https://www.nature.com/articles/s41598-019-51500-6
@@ -71,7 +71,6 @@ Sample data included in the package is taken from:
 }
 \section{Functions}{
 
-diat_findAcronyms()
 diat_loadData()
 diat_morpho()
 diat_size()

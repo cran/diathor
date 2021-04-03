@@ -52,20 +52,22 @@ diat_idch <- function(resultLoad){
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
-  #exact matches species in input data to acronym from index
-  taxaIn$idch_v <- idchDB$idch_v[match(taxaIn$acronym, trimws(idchDB$acronym))]
-  taxaIn$idch_s <- idchDB$idch_s[match(taxaIn$acronym, trimws(idchDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$idch_v <- idchDB$idch_v[match(taxaIn$acronym, trimws(idchDB$acronym))]
+  # taxaIn$idch_s <- idchDB$idch_s[match(taxaIn$acronym, trimws(idchDB$acronym))]
 
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$idch_s[i]) | is.na(taxaIn$idch_v[i])){
-  #     taxaIn$idch_v[i] <- idchDB$idch_v[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
-  #     taxaIn$idch_s[i] <- idchDB$idch_s[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$idch_v <- NA
+  taxaIn$idch_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$idch_s[i]) | is.na(taxaIn$idch_v[i])){
+      taxaIn$idch_v[i] <- idchDB$idch_v[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
+      taxaIn$idch_s[i] <- idchDB$idch_s[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
+    }
+  }
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------IDCH INDEX START --------#############
   print("Calculating IDCH index")

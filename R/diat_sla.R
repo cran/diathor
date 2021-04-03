@@ -51,21 +51,23 @@ diat_sla <- function(resultLoad){
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
-  #exact matches species in input data to acronym from index
-  taxaIn$sla_v <- slaDB$sla_v[match(taxaIn$acronym, trimws(slaDB$acronym))]
-  taxaIn$sla_s <- slaDB$sla_s[match(taxaIn$acronym, trimws(slaDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$sla_v <- slaDB$sla_v[match(taxaIn$acronym, trimws(slaDB$acronym))]
+  # taxaIn$sla_s <- slaDB$sla_s[match(taxaIn$acronym, trimws(slaDB$acronym))]
+  taxaIn$sla_v <- NA
+  taxaIn$sla_s <- NA
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$sla_s[i]) | is.na(taxaIn$sla_v[i])){
-  #     taxaIn$sla_v[i] <- slaDB$sla_v[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
-  #     taxaIn$sla_s[i] <- slaDB$sla_s[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
-  #   }
-  # }
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$sla_s[i]) | is.na(taxaIn$sla_v[i])){
+      taxaIn$sla_v[i] <- slaDB$sla_v[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
+      taxaIn$sla_s[i] <- slaDB$sla_s[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
+    }
+  }
   #removes NA from taxaInRA
   taxaIn[is.na(taxaIn)] <- 0
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------SLA INDEX START --------#############
   print("Calculating SLA index")

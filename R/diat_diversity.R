@@ -38,8 +38,8 @@ diat_diversity <- function(resultLoad){
   #removes NA from taxaIn
   taxaIn[is.na(taxaIn)] <- 0
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #remove NA to 0
   taxaIn[is.na(taxaIn)] <- 0

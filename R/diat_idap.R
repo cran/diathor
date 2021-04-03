@@ -54,21 +54,23 @@ diat_idap <- function(resultLoad){
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
-  #exact matches species in input data to acronym from index
-  taxaIn$idap_v <- idapDB$idap_v[match(taxaIn$acronym, trimws(idapDB$acronym))]
-  taxaIn$idap_s <- idapDB$idap_s[match(taxaIn$acronym, trimws(idapDB$acronym))]
+  # #exact matches species in input data to acronym from index
+  # taxaIn$idap_v <- idapDB$idap_v[match(taxaIn$acronym, trimws(idapDB$acronym))]
+  # taxaIn$idap_s <- idapDB$idap_s[match(taxaIn$acronym, trimws(idapDB$acronym))]
 
   # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$idap_s[i]) | is.na(taxaIn$idap_v[i])){
-  #     taxaIn$idap_v[i] <- idapDB$idap_v[match(trimws(rownames(taxaIn[i,])), trimws(idapDB$fullspecies))]
-  #     taxaIn$idap_s[i] <- idapDB$idap_s[match(trimws(rownames(taxaIn[i,])), trimws(idapDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$idap_v <- NA
+  taxaIn$idap_s <- NA
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$idap_s[i]) | is.na(taxaIn$idap_v[i])){
+      taxaIn$idap_v[i] <- idapDB$idap_v[match(trimws(rownames(taxaIn[i,])), trimws(idapDB$fullspecies))]
+      taxaIn$idap_s[i] <- idapDB$idap_s[match(trimws(rownames(taxaIn[i,])), trimws(idapDB$fullspecies))]
+    }
+  }
 
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------IDAP INDEX START --------#############
   print("Calculating IDAP index")
@@ -106,7 +108,7 @@ diat_idap <- function(resultLoad){
 
   #TAXA INCLUSION
   #taxa with acronyms
-  taxaIncluded <- taxaIn$species[which(taxaIn$idap_s > 0)]
+  taxaIncluded <- taxaIn$new_species[which(taxaIn$idap_s > 0)]
   inclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa included.csv", sep=""))
   colnamesInclusionMatrix <- c(colnames(inclusionmatrix), "IDAP")
   #creates a new data matrix to append the existing Taxa Included file
@@ -125,7 +127,7 @@ diat_idap <- function(resultLoad){
   write.csv(inclusionmatrix, paste(resultsPath,"\\Taxa included.csv", sep=""))
   #END TAXA INCLUSION
   #EXCLUDED TAXA
-  taxaExcluded <- taxaIn[!('%in%'(taxaIn$species,taxaIncluded)),"species"]
+  taxaExcluded <- taxaIn[!('%in%'(taxaIn$new_species,taxaIncluded)),"new_species"]
   exclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa excluded.csv", sep=""))
   #creates a new data matrix to append the existing Taxa Included file
   newexclusionmatrix <- as.data.frame(matrix(nrow=max(length(taxaExcluded), nrow(exclusionmatrix)), ncol=ncol(exclusionmatrix)+1))

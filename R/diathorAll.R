@@ -14,8 +14,6 @@
 #' @description
 #' The diaThorAll function is the master function of the package. It calculates all outputs from the data, and places them in the Output folder
 #' The input file for the package is a dataframe or an external CSV file. Species should be listed as rows, with species' names in column 1 (column name should be "species")
-#' If the input data contains a column named "acronym", the package will use that column to match species with their ecological values. This is more accurate than the
-#' heuristic search of species' names.
 #' The other columns (samples) have to contain the abundance of each species (relative or absolute) in each sample.
 #' The first row of the file has to contain the headers with the sample names. Remember that a column named "species" is mandatory, containing the species' names
 #' If a dataframe is not specified as a parameter (species_df), the package will show a dialog box to search for the CSV file

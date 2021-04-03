@@ -56,18 +56,19 @@ diat_idp <- function(resultLoad){
   #if acronyms exist, use them, its more precise
   #if there is an acronym column, it removes it and stores it for later
   #exact matches species in input data to acronym from index
-  taxaIn$idp_v <- idpDB$idp_v[match(trimws(taxaIn$acronym), trimws(idpDB$acronym))]
+  # taxaIn$idp_v <- idpDB$idp_v[match(trimws(taxaIn$acronym), trimws(idpDB$acronym))]
 
-  # #the ones still not found (NA), try against fullspecies
-  # for (i in 1:nrow(taxaIn)) {
-  #   if (is.na(taxaIn$idp_v[i])){
-  #     taxaIn$idp_v[i] <- idpDB$idp_v[match(trimws(rownames(taxaIn[i,])), trimws(idpDB$fullspecies))]
-  #   }
-  # }
+  taxaIn$idp_v <- NA
+  #the ones still not found (NA), try against fullspecies
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$idp_v[i])){
+      taxaIn$idp_v[i] <- idpDB$idp_v[match(trimws(rownames(taxaIn[i,])), trimws(idpDB$fullspecies))]
+    }
+  }
 
 
-  #gets the column named "acronym", everything before that is a sample
-  lastcol <- which(colnames(taxaIn)=="acronym")
+  #gets the column named "new_species", everything before that is a sample
+  lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------IDP INDEX START --------#############
   print("Calculating IDP index")

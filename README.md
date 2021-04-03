@@ -12,8 +12,7 @@ quality assesment, directly from your species’ data
 ## Description
 
 The package calculates multiple biotic indices using diatoms from
-environmental samples. Diatom species are recognized by their acronym or
-by their species’ name using a heuristic search, and their ecological
+environmental samples. Diatom species are recognized by their species’ name using a heuristic search, and their ecological
 data is retrieved from multiple sources.
 
 Morphological information about the species is retrieved from the

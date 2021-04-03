@@ -10,16 +10,6 @@
 #' @references Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951.
 "diat_sampleData"
 
-#' Acronyms
-#'
-#' Contains the acronyms for diatom species
-#'
-#' @format A data frame with the acronyms of 16823 diatoms
-#' @docType data
-#' @usage data(acronyms)
-#' @encoding UTF-8
-"acronyms"
-
 #' DBC (offline)
 #'
 #' Diatom database from the 'Diat.Barcode' project V9.0
