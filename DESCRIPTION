@@ -1,7 +1,7 @@
 Package: diathor
 Type: Package
 Title: Calculate Ecological Information and Diatom Based Indices
-Version: 0.0.5
+Version: 0.0.6
 Authors@R: c(
     person("María Mercedes", "Nicolosi Gelis", email = "mercedesnicolosi@ilpla.edu.ar", role = "aut", comment = c(ORCID = "0000-0001-6324-7930")),
     person("María Belén", "Sathicq", email = "mbelen@ilpla.edu.ar", role = "aut", comment = c(ORCID = "0000-0002-3534-8950")),
@@ -32,10 +32,10 @@ Depends: R (>= 2.10), stringdist, vegan, ggplot2, tidyr
 Imports: data.table, purrr, stringr, tibble
 Suggests: knitr, rmarkdown
 NeedsCompilation: no
-Packaged: 2021-04-03 14:02:58 UTC; Juaco
+Packaged: 2021-05-17 20:07:49 UTC; Juaco
 Author: María Mercedes Nicolosi Gelis [aut]
     (<https://orcid.org/0000-0001-6324-7930>),
   María Belén Sathicq [aut] (<https://orcid.org/0000-0002-3534-8950>),
   Joaquín Cochero [cre] (<https://orcid.org/0000-0003-3957-6819>)
 Repository: CRAN
-Date/Publication: 2021-04-03 14:20:02 UTC
+Date/Publication: 2021-05-18 15:40:19 UTC

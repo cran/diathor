@@ -197,7 +197,8 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
   result.plots.allToPDF <- function(color ="#0073C2"){
     print("Exporting all plots to PDF, please wait...")
     # Open a pdf file
-    pdf(paste(resultsPath, "\\", "Plots2.pdf", sep=""))
+    pdf(file.path(resultsPath, "Plots.pdf"))
+#   pdf(paste(resultsPath, "\\", "Plots2.pdf", sep=""))
 
     #Plots all resulting graphs (if exist)
     if(exists("diversity.results")){
@@ -229,30 +230,54 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
       vdamAero <- vandam.results[,startsWith(colnames(vandam.results),"VD.Aero")]
       vdamTrophic <- vandam.results[,startsWith(colnames(vandam.results),"VD.Trophic")]
       #remove the Taxa Used column
-      vdamSalinity <- vdamSalinity[1:(ncol(vdamSalinity)-1)]
-      vdamNHeterotrophy <- vdamNHeterotrophy[1:(ncol(vdamNHeterotrophy)-1)]
-      vdamOxygen <- vdamOxygen[1:(ncol(vdamOxygen)-1)]
-      vdamSaprobity <- vdamSaprobity[1:(ncol(vdamSaprobity)-1)]
-      vdamAero <- vdamAero[1:(ncol(vdamAero)-1)]
-      vdamTrophic <- vdamTrophic[1:(ncol(vdamTrophic)-1)]
+      if (ncol(vdamSalinity) > 0){
+        vdamSalinity <- vdamSalinity[1:(ncol(vdamSalinity)-1)]
+      }
+      if (ncol(vdamNHeterotrophy) > 0){
+        vdamNHeterotrophy <- vdamNHeterotrophy[1:(ncol(vdamNHeterotrophy)-1)]
+      }
+      if (ncol(vdamOxygen) > 0){
+        vdamOxygen <- vdamOxygen[1:(ncol(vdamOxygen)-1)]
+      }
+      if (ncol(vdamSaprobity) > 0){
+        vdamSaprobity <- vdamSaprobity[1:(ncol(vdamSaprobity)-1)]
+      }
+      if (ncol(vdamAero) > 0){
+        vdamAero <- vdamAero[1:(ncol(vdamAero)-1)]
+      }
+      if (ncol(vdamTrophic) > 0){
+        vdamTrophic <- vdamTrophic[1:(ncol(vdamTrophic)-1)]
+      }
     }
     if(exists("vdamSalinity")){
-      percentbarchart.plot(vdamSalinity, "Salinity")
+      if (ncol(vdamSalinity)>0){
+        percentbarchart.plot(vdamSalinity, "Salinity")
+      }
     }
     if(exists("vdamNHeterotrophy")){
-      percentbarchart.plot(vdamNHeterotrophy, "N-Heterotrophy")
+      if (ncol(vdamNHeterotrophy)>0){
+        percentbarchart.plot(vdamNHeterotrophy, "N-Heterotrophy")
+      }
     }
     if(exists("vdamOxygen")){
-      percentbarchart.plot(vdamOxygen, "Oxygen preferences")
+      if (ncol(vdamOxygen)>0){
+        percentbarchart.plot(vdamOxygen, "Oxygen preferences")
+      }
     }
     if(exists("vdamSaprobity")){
-      percentbarchart.plot(vdamSaprobity, "Saprobity")
+      if (ncol(vdamSaprobity)>0){
+        percentbarchart.plot(vdamSaprobity, "Saprobity")
+      }
     }
     if(exists("vdamAero")){
-      percentbarchart.plot(vdamAero, "Moisture")
+      if (ncol(vdamAero)>0){
+        percentbarchart.plot(vdamAero, "Moisture")
+      }
     }
     if(exists("vdamTrophic")){
-      percentbarchart.plot(vdamTrophic, "Trophic state")
+      if (ncol(vdamTrophic)>0){
+        percentbarchart.plot(vdamTrophic, "Trophic state")
+      }
     }
     if(exists("ips.results")){
       print(loli.plot(as.data.frame(ips.results[,1]), "IPS", 0, 5, samplenames=rownames(ips.results)) + geom_hline(yintercept=1, linetype="dashed", color = "darkgray", size=1)) #raw index. 0 = NA
@@ -313,13 +338,13 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
   #EXPORT AS CSV
   if (exportFormat == 1) {
     if (singleResult == TRUE) {
-      filename = paste(exportName, " - Results", ".csv")
-      write.csv(singleTable, paste(resultsPath, "\\", filename, sep=""))
+      filename <- paste(exportName, " - Results.csv", sep ="")
+      write.csv(singleTable, file.path(resultsPath, filename))
 
     } else {
       for (i in seq_along(listOfTables)) {
-        filename = paste(exportName, " - ",names(listOfTables)[i], ".csv")
-        write.csv(listOfTables[[i]], paste(resultsPath, "\\", filename, sep=""))
+        filename <- paste(exportName, " - ",names(listOfTables)[i], ".csv")
+        write.csv(singleTable, file.path(resultsPath, filename))
       }
     }
   }
@@ -375,13 +400,17 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
   #EXPORT AS BOTH CSV AND INTERNAL DATAFRAME - Default
   if (exportFormat == 3) {
     if (singleResult == TRUE) {
-      filename = paste(exportName, " - Results", ".csv")
-      write.csv(singleTable, paste(resultsPath, "\\", filename, sep=""))
+      filename <- paste(exportName, " - Results.csv", sep ="")
+      # write.csv(singleTable, paste(resultsPath, "\\", filename, sep=""))
+      write.csv(singleTable, file.path(resultsPath, filename))
+
       return(singleTable)
     } else {
       for (i in seq_along(listOfTables)) {
-        filename = paste(exportName, " - ",names(listOfTables)[i], ".csv")
-        write.csv(listOfTables[[i]], paste(resultsPath, "\\", filename, sep=""))
+        filename <- paste(exportName, " - ",names(listOfTables)[i], ".csv", sep ="")
+        # write.csv(listOfTables[[i]], paste(resultsPath, "\\", filename, sep=""))
+        write.csv(singleTable, file.path(resultsPath, filename))
+
       }
 
       resultList <- list(as.data.frame(listOfTables[[1]]),

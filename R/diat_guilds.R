@@ -66,6 +66,10 @@ diat_guilds <- function(resultLoad){
   #compute relative abundances
   rel_abu  = apply(taxaInRA_samples, 2, function(x)
     round(x / sum(x) * 100, 2))
+
+  #remove NAN
+  rel_abu[is.na(rel_abu)] <- 0
+
   # combine Taxa and other ecological data agian.
   taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
   # convert from data.table to tibble
@@ -95,20 +99,41 @@ diat_guilds <- function(resultLoad){
     guild_Mot[is.na(guild_Mot)] = 0
     guild_Plank[is.na(guild_Plank)] = 0
     #total abundance for each guild in each sample
-    guild_HP_ab <- sum(taxaInRA[which(guild_HP == 1), sampleNumber, with = F], na.rm = T)
-    guild_LP_ab <- sum(taxaInRA[which(guild_LP == 1), sampleNumber, with = F], na.rm = T)
-    guild_Mot_ab <- sum(taxaInRA[which(guild_Mot == 1), sampleNumber, with = F], na.rm = T)
-    guild_Plank_ab <- sum(taxaInRA[which(guild_Plank == 1), sampleNumber, with = F], na.rm = T)
+    #conditional
+    if (length(taxaInRA[which(guild_HP == 1)])){
+      guild_HP_ab <- sum(taxaInRA[which(guild_HP == 1), sampleNumber, with = F], na.rm = T)
+    } else {
+      guild_HP_ab <- 0
+    }
+
+    if (length(taxaInRA[which(guild_LP == 1)])){
+      guild_LP_ab <- sum(taxaInRA[which(guild_LP == 1), sampleNumber, with = F], na.rm = T)
+    } else {
+      guild_LP_ab <- 0
+    }
+
+    if (length(taxaInRA[which(guild_Mot == 1)])){
+      guild_Mot_ab <- sum(taxaInRA[which(guild_Mot == 1), sampleNumber, with = F], na.rm = T)
+    } else {
+      guild_Mot_ab <- 0
+    }
+    if (length(taxaInRA[which(guild_Plank == 1)])){
+      guild_Plank_ab <- sum(taxaInRA[which(guild_Plank == 1), sampleNumber, with = F], na.rm = T)
+    } else {
+      guild_Plank_ab <- 0
+    }
+
     guild_indet <- 100 - sum(guild_HP_ab, guild_LP_ab, guild_Mot_ab, guild_Plank_ab)
     if (guild_indet < 0) {
       guild_indet <- 0
     }
     #% abundance for each guild
-    guild_HP_ab <- round(guild_HP_ab, digits = 3)
-    guild_LP_ab <- round(guild_LP_ab, digits = 3)
-    guild_Mot_ab <- round(guild_Mot_ab, digits = 3)
-    guild_Plank_ab <- round(guild_Plank_ab, digits = 3)
-    guild_indet <- round(guild_indet, digits = 3)
+      guild_HP_ab <- round(guild_HP_ab, digits = 3)
+      guild_LP_ab <- round(guild_LP_ab, digits = 3)
+      guild_Mot_ab <- round(guild_Mot_ab, digits = 3)
+      guild_Plank_ab <- round(guild_Plank_ab, digits = 3)
+      guild_indet <- round(guild_indet, digits = 3)
+
     #taxa used for each guild
     guildtaxaused <- length(which(guild_HP == 1 & taxaInRA[, sampleNumber, with =F] > 0))
     guildtaxaused <- guildtaxaused + length(which(guild_LP ==

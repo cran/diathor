@@ -78,16 +78,26 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
     print("Exporting detailed reports for VanDam ecological preferences")
     print(resultsPath)
     vandamtaxafile = paste("VanDam Taxa used.txt", sep = "")
+   # write("TAXA USED FOR EACH ECOLOGICAL VARIABLE USING VANDAM's CLASSIFICATION",
+    #      paste(resultsPath, "\\", vandamtaxafile, sep = ""))
+
     write("TAXA USED FOR EACH ECOLOGICAL VARIABLE USING VANDAM's CLASSIFICATION",
-          paste(resultsPath, "\\", vandamtaxafile, sep = ""))
-    write("These taxa were included because: ", paste(resultsPath,
-                                                      "\\", vandamtaxafile, sep = ""), append = TRUE)
-    write("a) they had a reliable classification in VanDam's classification system",
-          paste(resultsPath, "\\", vandamtaxafile, sep = ""),
-          append = TRUE)
-    write("b) they had a relative abundance in the sample > 0",
-          paste(resultsPath, "\\", vandamtaxafile, sep = ""),
-          append = TRUE)
+          file = file.path(resultsPath,vandamtaxafile))
+
+    # write("These taxa were included because: ", paste(resultsPath,
+    #                                                   "\\", vandamtaxafile, sep = ""), append = TRUE)
+    write("These taxa were included because: ", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
+
+    # write("a) they had a reliable classification in VanDam's classification system",
+    #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
+    #       append = TRUE)
+    write("a) they had a reliable classification in VanDam's classification system", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
+
+    # write("b) they had a relative abundance in the sample > 0",
+    #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
+    #       append = TRUE)
+    write("b) they had a relative abundance in the sample > 0", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
+
   }
   # begin loop over different variables
 
@@ -222,16 +232,41 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
     if (vandamReports & exists("resultsPath")){
       print_taxa = lapply(te2, function(x)taxaInRA$recognizedSp[x])
       for (print.i in seq_along(print_taxa)){
+        # write(paste(str_to_upper(mess_var), "- Sample:", colnames(taxaInRA)[print.i]),
+        #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
+        #       append = TRUE)
         write(paste(str_to_upper(mess_var), "- Sample:", colnames(taxaInRA)[print.i]),
-              paste(resultsPath, "\\", vandamtaxafile, sep = ""),
+              file.path(resultsPath, vandamtaxafile),
               append = TRUE)
-        write(print_taxa[[print.i]], paste(resultsPath,
-                                           "\\", vandamtaxafile, sep = ""), append = TRUE)
+#
+#         write(print_taxa[[print.i]], paste(resultsPath,
+#                                            "\\", vandamtaxafile, sep = ""), append = TRUE)
+        write(print_taxa[[print.i]], file.path(resultsPath, vandamtaxafile), append = TRUE)
       }
     }
     rm(vdam_var, te3, te2, lp_data, mess_var)
   }
-  vandam.results = data.frame(ls_output)
+
+
+  if (nrow(ls_output[[1]]) > 0){
+    vandam.results <- data.frame(ls_output[[1]])
+  }
+  if (nrow(ls_output[[2]]) > 0){
+    vandam.results <- cbind(vandam.results, data.frame(ls_output[[2]]))
+  }
+  if (nrow(ls_output[[3]]) > 0){
+    vandam.results <- cbind(vandam.results, data.frame(ls_output[[3]]))
+  }
+  if (nrow(ls_output[[4]]) > 0){
+    vandam.results <- cbind(vandam.results, data.frame(ls_output[[4]]))
+  }
+  if (nrow(ls_output[[5]]) > 0){
+    vandam.results <- cbind(vandam.results, data.frame(ls_output[[5]]))
+  }
+  if (nrow(ls_output[[6]]) > 0){
+    vandam.results <- cbind(vandam.results, data.frame(ls_output[[6]]))
+  }
+
   vandam.results[is.na(vandam.results)] <- 0 #have to remove NAs for plotting
   return(vandam.results)
 

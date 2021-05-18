@@ -105,17 +105,20 @@ diat_tdi <- function(resultLoad){
   #######--------TDI INDEX: END--------############
   #PRECISION
   resultsPath <- resultLoad[[4]]
-  precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
+  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
+  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
   precisionmatrix <- cbind(precisionmatrix, tdi.results$Precision)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
   names(precisionmatrix)[names(precisionmatrix)=="tdi.results$Precision"] <- "TDI"
-  write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
+  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
+  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
   #END PRECISION
 
   #TAXA INCLUSION
   #taxa with acronyms
   taxaIncluded <- taxaIn$species[which(taxaIn$tdi_s > 0)]
-  inclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa included.csv", sep=""))
+  #inclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa included.csv", sep=""))
+  inclusionmatrix <- read.csv(file.path(resultsPath, "Taxa included.csv"))
   colnamesInclusionMatrix <- c(colnames(inclusionmatrix), "TDI")
   #creates a new data matrix to append the existing Taxa Included file
   newinclusionmatrix <- as.data.frame(matrix(nrow=max(length(taxaIncluded), nrow(inclusionmatrix)), ncol=ncol(inclusionmatrix)+1))
@@ -131,11 +134,13 @@ diat_tdi <- function(resultLoad){
   inclusionmatrix <- newinclusionmatrix
   colnames(inclusionmatrix) <- colnamesInclusionMatrix
   inclusionmatrix <- inclusionmatrix[-(1:which(colnames(inclusionmatrix)=="Eco.Morpho")-1)]
-  write.csv(inclusionmatrix, paste(resultsPath,"\\Taxa included.csv", sep=""))
+  #write.csv(inclusionmatrix, paste(resultsPath,"\\Taxa included.csv", sep=""))
+  write.csv(inclusionmatrix, file.path(resultsPath,"Taxa included.csv"))
   #END TAXA INCLUSION
   #EXCLUDED TAXA
   taxaExcluded <- taxaIn[!('%in%'(taxaIn$species,taxaIncluded)),"species"]
-  exclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  #exclusionmatrix <- read.csv(paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  exclusionmatrix <- read.csv(file.path(resultsPath, "Taxa excluded.csv"))
   #creates a new data matrix to append the existing Taxa Included file
   newexclusionmatrix <- as.data.frame(matrix(nrow=max(length(taxaExcluded), nrow(exclusionmatrix)), ncol=ncol(exclusionmatrix)+1))
   for (i in 1:ncol(exclusionmatrix)){
@@ -149,7 +154,8 @@ diat_tdi <- function(resultLoad){
   exclusionmatrix <- newexclusionmatrix
   colnames(exclusionmatrix) <- colnamesInclusionMatrix
   exclusionmatrix <- exclusionmatrix[-(1:which(colnames(exclusionmatrix)=="Eco.Morpho")-1)]
-  write.csv(exclusionmatrix, paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  #write.csv(exclusionmatrix, paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  write.csv(exclusionmatrix, file.path(resultsPath,"Taxa excluded.csv"))
   #END EXCLUDED TAXA
 
   rownames(tdi.results) <- resultLoad[[3]]

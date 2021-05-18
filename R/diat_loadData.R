@@ -84,7 +84,17 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
 
   }
 
-  sampleNames <- colnames(species_df) #Saves the names of the samples
+  #If the acronym column exists, moves it to the back
+  acrocol <- which(colnames(species_df)=="acronym") #finds the acronym column
+  if (length(acrocol) != 0) {
+    species_df1 <- species_df[,-acrocol] #removes the acronym column if it exists
+    sampleNames <- colnames(species_df1) #Saves the names of the samples
+
+  } else {
+    sampleNames <- colnames(species_df) #Saves the names of the samples
+  }
+
+
 
   #SINCE THE ACRONYM COLUMN WAS REMOVED, WE HAVE TO CREATE A new_species COLUMN
   species_df$new_species <- NA
@@ -153,6 +163,10 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   dbc2 <- as.data.frame(dbc[!duplicated(dbc[,"species"]),]) #transforms dbc to a dataframe
   ecodata <- dbc2[which(colnames(dbc2)=="species" ):ncol(dbc2)] #keeps only from the "species" column onwards, to keep the ecological data
 
+
+
+
+
   ########-------- MATCHES AND BINDS DATA SETS
   # NOTE: if several species match with the same name in the diat.barcode database (multiple strains), it keeps the
   # first occurence. Ecological indices usually match in all strains of the same species
@@ -196,10 +210,16 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   #close progressbar
   close(pb)
   #END NEW SEARCH
+
+
+
+
   taxaInEco <- taxaInSp
   taxaIn <- species_df #dataframe to be exported for indices
   taxaIncluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp != "Not found")])
   taxaExcluded <- as.data.frame(rownames(taxaInEco)[which(taxaInEco$recognizedSp == "Not found")])
+
+
 
   #remove the updated species col  and move it to the back in both taxaIn
   newspecies_col <- taxaIn$new_species
@@ -211,6 +231,21 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   taxaInEco<- taxaInEco[ , !(names(taxaInEco) == "new_species")] #removes the newspecies_col
   taxaInEco$new_species <- newspecies_col2
 
+  #If the acronym column exists in taxaIn, moves it to the back
+  acrocol <- which(colnames(taxaIn)=="acronym") #finds the acronym column
+  if (length(acrocol) != 0) {
+    acrocolv <- taxaIn[,acrocol] #saves the vector
+    taxaIn <- taxaIn[,-acrocol] #removes the acronym column if it exists
+    taxaIn$acronym <- acrocolv
+  }
+
+  #If the acronym column exists in taxaInEco, moves it to the back
+  acrocol <- which(colnames(taxaInEco)=="acronym") #finds the acronym column
+  if (length(acrocol) != 0) {
+    acrocolv <- taxaInEco[,acrocol] #saves the vector
+    taxaInEco <- taxaInEco[,-acrocol] #removes the acronym column if it exists
+    taxaInEco$acronym <- acrocolv
+  }
 
   removeelem <- c("species") #Removes columns not samples
   sampleNames <- sampleNames[!(sampleNames %in% removeelem)]
@@ -221,12 +256,14 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   }
   #Exports included taxa in morphology analyses
   colnames(taxaIncluded) <- "Eco/Morpho"
-  write.csv(taxaIncluded, paste(resultsPath,"\\Taxa included.csv", sep=""))
+ # write.csv(taxaIncluded, paste(resultsPath,"\\Taxa included.csv", sep=""))
+  write.csv(taxaIncluded, file.path(resultsPath,"Taxa included.csv"))
   print(paste("Number of taxa recognized for morphology:", nrow(taxaIncluded), "-- Detailed list in 'Taxa included.csv'"))
 
   #also makes a matrix for all the taxa left out, for the user to review
   colnames(taxaExcluded) <- "Eco/Morpho"
-  write.csv(taxaExcluded, paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  #write.csv(taxaExcluded, paste(resultsPath,"\\Taxa excluded.csv", sep=""))
+  write.csv(taxaExcluded, file.path(resultsPath,"Taxa excluded.csv"))
   print(paste("Number of taxa excluded for morphology:", nrow(taxaExcluded), "-- Detailed list in 'Taxa excluded.csv'" ))
 
   #Has to clean the TaxaInEco for those species that were not found
@@ -236,7 +273,8 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   precisionmatrix <- as.data.frame(sampleNames)
   names(precisionmatrix)[names(precisionmatrix)=="sampleNames"] <- "Sample"
 
-  write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
+  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
+  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
 
   #gets the column named "new_species" everything before that column should be a sample with abundance data
   lastcol = which(colnames(taxaIn)=="new_species")
@@ -244,17 +282,22 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   # #gets sample names
   # sampleNames <- colnames(taxaIn[1:(lastcol-1)])
 
+
+
   #CREATES A RELATIVE ABUNDANCE MATRIX AS WELL FOR THOSE INDICES THAT USE IT
   #Convert taxaIn sample data to Relative Abundance data
   if (isRelAb == FALSE) {
     taxaInRA <- taxaIn
+
     print("Converting species' densities to relative abundance")
     rel_abu  = apply(taxaInRA[,1:(lastcol-1)], 2, function(x)
       round(x / sum(x) * 100, 2))
-    taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
+    taxaInRA <- as.data.frame(cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)]))
+    names(taxaInRA)[lastcol] <- "new_species"
   } else {
     taxaInRA <- taxaIn
   }
+
 
   #CREATES THE EXPORT PRODUCTS
   resultList <- list(as.data.frame(taxaInRA), as.data.frame(taxaIn), sampleNames, resultsPath, taxaInEco)
