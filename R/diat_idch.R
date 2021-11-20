@@ -1,5 +1,6 @@
 #' Calculates the Swiss Diatom Index (IDCH)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -11,7 +12,7 @@
 #'
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -33,7 +34,7 @@
 ###### ---------- FUNCTION FOR IDCH INDEX (Swiss Diatom Index, Lecointe et al., 2003)  ---------- ########
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with IDCH index per sample
-diat_idch <- function(resultLoad){
+diat_idch <- function(resultLoad, maxDistTaxa = 2){
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
     print("Please run the diat_loadData() function first to enter your species data in the correct format")
@@ -45,24 +46,62 @@ diat_idch <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
 
-  ### START NEW CORRECTIONS
   #Loads the species list specific for this index
-  #idchDB <- read.csv("../Indices/idch.csv") #uses the external csv file
   idchDB <- diathor::idch
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
-  # #exact matches species in input data to acronym from index
-  # taxaIn$idch_v <- idchDB$idch_v[match(taxaIn$acronym, trimws(idchDB$acronym))]
-  # taxaIn$idch_s <- idchDB$idch_s[match(taxaIn$acronym, trimws(idchDB$acronym))]
-
   # #the ones still not found (NA), try against fullspecies
   taxaIn$idch_v <- NA
   taxaIn$idch_s <- NA
+  print("Calculating IDCH index")
   for (i in 1:nrow(taxaIn)) {
     if (is.na(taxaIn$idch_s[i]) | is.na(taxaIn$idch_v[i])){
-      taxaIn$idch_v[i] <- idchDB$idch_v[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
-      taxaIn$idch_s[i] <- idchDB$idch_s[match(trimws(rownames(taxaIn[i,])), trimws(idchDB$fullspecies))]
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
+      species_found <- idchDB[stringdist::ain(trimws(tolower(idchDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$idch_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$idch_s))))
+        taxaIn$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$idch_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$idch_s))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- idchDB[stringdist::ain(trimws(tolower(idchDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$idch_v[1]))))
+            svalue <- as.numeric(names(which.max(table(species_found$idch_s[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+            svalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaIn$idch_v[i] <- vvalue
+      taxaIn$idch_s[i] <- svalue
     }
   }
 
@@ -70,39 +109,48 @@ diat_idch <- function(resultLoad){
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------IDCH INDEX START --------#############
-  print("Calculating IDCH index")
+
   #creates results dataframe
   idch.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(idch.results) <- c("IDCH", "IDCH20", "Precision")
+  colnames(idch.results) <- c("IDCH", "IDCH20", "num_taxa")
   #finds the column
   idch_s <- (taxaIn[,"idch_s"])
   idch_v <- (taxaIn[,"idch_v"])
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$idch_s)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in IPS index: ", number_recognized_taxa, "%"))
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    IDCHtaxaused <- (length(which(idch_s * taxaIn[,sampleNumber] > 0))*100 / length(idch_s))
+    #Revised v0.0.8
+      num_taxa <- length(which(idch_s * taxaIn[,sampleNumber] > 0))
     #remove the NA
     idch_s[is.na(idch_s)] = 0
     idch_v[is.na(idch_v)] = 0
     IDCH <- sum((taxaIn[,sampleNumber]*as.double(idch_s)*as.double(idch_v)))/sum(taxaIn[,sampleNumber]*as.double(idch_v)) #raw value
     IDCH20 <- 22.714-(2.714*IDCH)
-    idch.results[sampleNumber, ] <- c(IDCH, IDCH20,IDCHtaxaused)
+    idch.results[sampleNumber, ] <- c(IDCH, IDCH20,num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
   close(pb)
   #######--------IDCH INDEX: END--------############
-  #PRECISION
+
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
- # precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, idch.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, idch.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="idch.results$Precision"] <- "IDCH"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="idch.results$num_taxa"] <- "IDCH"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
 
   #TAXA INCLUSION

@@ -4,7 +4,7 @@
 #' The input for these functions is the resulting dataframe obtained from the diat_loadData() function, to calculate the ecological guilds for the diatoms
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' Guild classification is obtained from:
 #' \itemize{
@@ -43,7 +43,6 @@ diat_guilds <- function(resultLoad){
 
   taxaInEco <- resultLoad[[5]]
 
-
   #checks thata taxaInEco (taxaInEco from diat_Load) has at least recognized some species
   if (nrow(taxaInEco)==0){
     print("No species were recognized for guild calculations")
@@ -58,7 +57,6 @@ diat_guilds <- function(resultLoad){
   #Convert taxaIn sample data to Relative Abundance data
   taxaInRA <- taxaInEco
 
-  ###### MODIFIED BY JJ
   taxaInRA_samples = taxaInRA[, 1:(lastcol - 1)]
   setDT(taxaInRA_samples)
   # replace NA with 0
@@ -100,24 +98,24 @@ diat_guilds <- function(resultLoad){
     guild_Plank[is.na(guild_Plank)] = 0
     #total abundance for each guild in each sample
     #conditional
-    if (length(taxaInRA[which(guild_HP == 1)])){
+    if (nrow(taxaInRA[which(guild_HP == 1),sampleNumber])>1){
       guild_HP_ab <- sum(taxaInRA[which(guild_HP == 1), sampleNumber, with = F], na.rm = T)
     } else {
       guild_HP_ab <- 0
     }
 
-    if (length(taxaInRA[which(guild_LP == 1)])){
+    if (nrow(taxaInRA[which(guild_LP == 1),sampleNumber])>1){
       guild_LP_ab <- sum(taxaInRA[which(guild_LP == 1), sampleNumber, with = F], na.rm = T)
     } else {
       guild_LP_ab <- 0
     }
 
-    if (length(taxaInRA[which(guild_Mot == 1)])){
+    if (nrow(taxaInRA[which(guild_Mot == 1),sampleNumber])>1){
       guild_Mot_ab <- sum(taxaInRA[which(guild_Mot == 1), sampleNumber, with = F], na.rm = T)
     } else {
       guild_Mot_ab <- 0
     }
-    if (length(taxaInRA[which(guild_Plank == 1)])){
+    if (nrow(taxaInRA[which(guild_Plank == 1),sampleNumber])>1){
       guild_Plank_ab <- sum(taxaInRA[which(guild_Plank == 1), sampleNumber, with = F], na.rm = T)
     } else {
       guild_Plank_ab <- 0

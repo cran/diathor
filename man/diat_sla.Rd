@@ -5,10 +5,12 @@
 \alias{diat_sla}
 \title{Calculates the Sladecek Index (SLA)}
 \usage{
-diat_sla(resultLoad)
+diat_sla(resultLoad, maxDistTaxa = 2)
 }
 \arguments{
 \item{resultLoad}{The resulting list obtained from the diat_loadData() function}
+
+\item{maxDistTaxa}{Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2}
 }
 \description{
 The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
@@ -21,7 +23,7 @@ References for the index:
 
 Sample data in the examples is taken from:
 \itemize{
-\item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+\item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 }
 }
 \examples{

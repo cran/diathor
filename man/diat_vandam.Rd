@@ -16,7 +16,7 @@ diat_vandam(resultLoad, vandamReports = TRUE)
 The input for these functions is the resulting dataframe obtained from the diat_loadData() function, to calculate ecological information for diatoms based on the Van Dam classification
 Sample data in the examples is taken from:
 \itemize{
-\item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+\item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 }
 Van Dam classification is obtained form:
 \itemize{
@@ -24,7 +24,7 @@ Van Dam classification is obtained form:
 }
 }
 \examples{
-\donttest{
+\dontrun{
 # Example using sample data included in the package (sampleData):
 data("diat_sampleData")
 # First, the diat_loadData() function has to be called to read the data

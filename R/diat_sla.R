@@ -1,5 +1,6 @@
 #' Calculates the Sladecek Index (SLA)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -11,7 +12,7 @@
 #'
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -32,7 +33,7 @@
 ###### ---------- FUNCTION FOR SLA INDEX  (Sladecek 1986)---------- ########
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with SLA index per sample
-diat_sla <- function(resultLoad){
+diat_sla <- function(resultLoad, maxDistTaxa = 2){
 
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
@@ -45,24 +46,68 @@ diat_sla <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
   #Loads the species list specific for this index
-  #slaDB <- read.csv("../Indices/sla.csv") #uses the external csv file
   slaDB <- diathor::sla
 
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
   # #exact matches species in input data to acronym from index
-  # taxaIn$sla_v <- slaDB$sla_v[match(taxaIn$acronym, trimws(slaDB$acronym))]
-  # taxaIn$sla_s <- slaDB$sla_s[match(taxaIn$acronym, trimws(slaDB$acronym))]
+
   taxaIn$sla_v <- NA
   taxaIn$sla_s <- NA
-  # #the ones still not found (NA), try against fullspecies
+
+  print("Calculating SLA index")
   for (i in 1:nrow(taxaIn)) {
-    if (is.na(taxaIn$sla_s[i]) | is.na(taxaIn$sla_v[i])){
-      taxaIn$sla_v[i] <- slaDB$sla_v[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
-      taxaIn$sla_s[i] <- slaDB$sla_s[match(trimws(rownames(taxaIn[i,])), trimws(slaDB$fullspecies))]
+    if (is.na(taxaIn$sla_v[i]) | is.na(taxaIn$sla_s[i])){
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search.
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
+
+      species_found <- slaDB[stringdist::ain(trimws(tolower(slaDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$sla_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$sla_s))))
+        taxaIn$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$sla_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$sla_s))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- slaDB[stringdist::ain(trimws(tolower(slaDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$sla_v[1]))))
+            svalue <- as.numeric(names(which.max(table(species_found$sla_s[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+            svalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaIn$sla_v[i] <- vvalue
+      taxaIn$sla_s[i] <- svalue
     }
   }
+
   #removes NA from taxaInRA
   taxaIn[is.na(taxaIn)] <- 0
 
@@ -70,24 +115,33 @@ diat_sla <- function(resultLoad){
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------SLA INDEX START --------#############
-  print("Calculating SLA index")
+
   #creates results dataframe
   sla.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(sla.results) <- c("SLA", "SLA20", "Precision")
+  colnames(sla.results) <- c("SLA", "SLA20", "num_taxa")
   #finds the column
   sla_s <- (taxaIn[,"sla_s"])
   sla_v <- (taxaIn[,"sla_v"])
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$sla_s)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in SLA index: ", number_recognized_taxa, "%"))
+
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    SLAtaxaused <- (length(which(sla_s * taxaIn[,sampleNumber] > 0))*100 / length(sla_s))
+    # New in v0.0.8
+    num_taxa <- length(which(sla_s * taxaIn[,sampleNumber] > 0))
     #remove the NA
     sla_s[is.na(sla_s)] = 0
     sla_v[is.na(sla_v)] = 0
     SLA <- sum((taxaIn[,sampleNumber]*as.double(sla_s)*as.double(sla_v)))/sum(taxaIn[,sampleNumber]*as.double(sla_v)) #raw value
     SLA20 <- 20-(4.75*SLA)
-    sla.results[sampleNumber, ] <- c(SLA, SLA20,SLAtaxaused)
+    sla.results[sampleNumber, ] <- c(SLA, SLA20, num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
@@ -95,15 +149,15 @@ diat_sla <- function(resultLoad){
   close(pb)
 
   #######--------SLA INDEX: END--------############
-  #PRECISION
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
-  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, sla.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, sla.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="sla.results$Precision"] <- "SLA"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="sla.results$num_taxa"] <- "SLA"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
 
   #TAXA INCLUSION

@@ -1,5 +1,6 @@
 #' Calculates the Trophic (TDI) index
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -10,7 +11,7 @@
 #' }
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -31,10 +32,7 @@
 #### IN THIS SECTION WE CALCULATE TDI INDEX (Trophic Index - Kelly
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with TDI index per sample
-#### WARNING: The formula used is [TDI= sum(a.s.v)/ sum(a.v)], NOT the formula
-#### written in the OMNIDIA help file, which is [TDI= sum(a.s.v)/ sum(s.v)].
-#### This corrected formula matches the OMNIDIA results.
-diat_tdi <- function(resultLoad){
+diat_tdi <- function(resultLoad, maxDistTaxa = 2){
 
 
   # First checks if species data frames exist. If not, loads them from CSV files
@@ -52,7 +50,6 @@ diat_tdi <- function(resultLoad){
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #Loads the species list specific for this index
-  #tdiDB <- read.csv("../Indices/tdi.csv") #uses the external csv file
   tdiDB <- diathor::tdi
 
   #creates a species column with the rownames to fit in the script
@@ -61,57 +58,113 @@ diat_tdi <- function(resultLoad){
   #removes NA from taxaIn
   taxaIn[is.na(taxaIn)] <- 0
 
-  #if acronyms exist, use them, its more precise
-  #if there is an acronym column, it removes it and stores it for later
-  #exact matches species in input data to acronym from index
-  # taxaIn$tdi_s <- tdiDB$tdi_s[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
-  # taxaIn$tdi_v <- tdiDB$tdi_v[match(trimws(taxaIn$acronym), trimws(tdiDB$acronym))]
-
   # #the ones still not found (NA), try against fullspecies
   taxaIn$tdi_v <- NA
   taxaIn$tdi_s <- NA
+
+
+  print("Calculating TDI index")
   for (i in 1:nrow(taxaIn)) {
     if (is.na(taxaIn$tdi_s[i]) | is.na(taxaIn$tdi_v[i])){
-      taxaIn$tdi_v[i] <- tdiDB$tdi_v[match(trimws(rownames(taxaIn[i,])), trimws(tdiDB$fullspecies))]
-      taxaIn$tdi_s[i] <- tdiDB$tdi_s[match(trimws(rownames(taxaIn[i,])), trimws(tdiDB$fullspecies))]
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
+
+      #match the species name to the DB
+      species_found <- tdiDB[stringdist::ain(trimws(tolower(tdiDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) > 0){
+        vvalue <- as.numeric(names(which.max(table(species_found$tdi_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$tdi_s))))
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$tdi_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$tdi_s))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety (if species)
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth, build new name
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "f.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- tdiDB[stringdist::ain(trimws(tolower(tdiDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$tdi_v[1]))))
+            svalue <- as.numeric(names(which.max(table(species_found$tdi_s[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+              #species not found, make everything NA
+              vvalue = NA
+              svalue = NA
+          }
+        }
+      }
     }
-  }
+      #records the final consensus value
+      taxaIn$tdi_v[i] <- vvalue
+      taxaIn$tdi_s[i] <- svalue
+    }
+
+
 
   #######--------TDI INDEX START --------#############
-  print("Calculating TDI index")
+
   #creates results dataframe
   tdi.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(tdi.results) <- c("TDI20", "TDI100", "Precision")
+  colnames(tdi.results) <- c("TDI20", "TDI100", "num_taxa")
   #finds the column
   tdi_s <- (taxaIn[,"tdi_s"])
   tdi_v <- (taxaIn[,"tdi_v"])
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$tdi_s)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in TDI index: ", number_recognized_taxa, "%"))
+
+
+
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    TDItaxaused <- (length(which(tdi_s * taxaIn[,sampleNumber] > 0))*100 / length(tdi_s))
+    #Revised v0.0.8
+    num_taxa <- length(which(tdi_s * taxaIn[,sampleNumber] > 0))
     #remove the NA
     tdi_s[is.na(tdi_s)] = 0
     tdi_v[is.na(tdi_v)] = 0
     TDI <- sum((taxaIn[,sampleNumber]*as.double(tdi_s)*as.double(tdi_v)))/sum(taxaIn[,sampleNumber]*as.double(tdi_v)) #raw value
     TDI20 <- (-4.75*TDI)+24.75
     TDI100 <- (TDI*25)-25
-    tdi.results[sampleNumber, ] <- c(TDI20, TDI100,TDItaxaused)
+    tdi.results[sampleNumber, ] <- c(TDI20, TDI100,num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
   close(pb)
   #######--------TDI INDEX: END--------############
-  #PRECISION
+
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
-  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, tdi.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, tdi.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="tdi.results$Precision"] <- "TDI"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="tdi.results$num_taxa"] <- "TDI"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
 
   #TAXA INCLUSION

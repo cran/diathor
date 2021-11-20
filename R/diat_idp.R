@@ -1,5 +1,6 @@
 #' Calculates the Pampean Diatom Index (IDP)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -10,7 +11,7 @@
 #' }
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -32,7 +33,7 @@
 #### IN THIS SECTION WE CALCULATE IDP INDEX (Pampean Index - Gomez & Licursi)
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with IDP index per sample
-diat_idp <- function(resultLoad){
+diat_idp <- function(resultLoad, maxDistTaxa = 2){
 
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
@@ -45,11 +46,8 @@ diat_idp <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
 
-  ### START NEW CORRECTIONS
   #Loads the species list specific for this index
-  #idpDB <- read.csv("../Indices/idp.csv") #uses the external csv file
   idpDB <- diathor::idp
-
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
 
@@ -59,10 +57,50 @@ diat_idp <- function(resultLoad){
   # taxaIn$idp_v <- idpDB$idp_v[match(trimws(taxaIn$acronym), trimws(idpDB$acronym))]
 
   taxaIn$idp_v <- NA
-  #the ones still not found (NA), try against fullspecies
+  print("Calculating IDP index")
   for (i in 1:nrow(taxaIn)) {
     if (is.na(taxaIn$idp_v[i])){
-      taxaIn$idp_v[i] <- idpDB$idp_v[match(trimws(rownames(taxaIn[i,])), trimws(idpDB$fullspecies))]
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
+
+      species_found <- idpDB[stringdist::ain(trimws(tolower(idpDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$idp_v))))
+        taxaIn$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$idp_v))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- idpDB[stringdist::ain(trimws(tolower(idpDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$idp_v[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaIn$idp_v[i] <- vvalue
     }
   }
 
@@ -71,23 +109,33 @@ diat_idp <- function(resultLoad){
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------IDP INDEX START --------#############
-  print("Calculating IDP index")
+
   idp.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(idp.results) <- c("IDP", "IDP20", "Precision")
+  colnames(idp.results) <- c("IDP", "IDP20", "num_taxa")
   #finds the column
   idp_v <- (taxaIn[,"idp_v"])
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$idp_v)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in IDP index: ", number_recognized_taxa, "%"))
+
+
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    IDPtaxaused <- (length(which(idp_v * taxaIn[,sampleNumber] > 0))*100 / length(idp_v))
+    #Revised v0.0.8
+    num_taxa <- length(which(idp_v * taxaIn[,sampleNumber] > 0))
 
     #print(paste("Total taxa used for IDP:", sum(!is.na(taxaIn$idp_v ))))
     #remove the NA
     idp_v[is.na(idp_v)] = 0
     IDP <- sum((taxaIn[,sampleNumber]*as.double(idp_v)))/sum(taxaIn[which(idp_v > 0),sampleNumber]) #raw value
     IDP20 <- 20-(4.75*IDP)
-    idp.results[sampleNumber, ] <- c(IDP, IDP20,IDPtaxaused)
+    idp.results[sampleNumber, ] <- c(IDP, IDP20,num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
@@ -98,13 +146,15 @@ diat_idp <- function(resultLoad){
   #PRECISION
   resultsPath <- resultLoad[[4]]
 
-  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, idp.results$Precision)
+  #PRECISION RECORDING
+  resultsPath <- resultLoad[[4]]
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, idp.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="idp.results$Precision"] <- "IDP"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="idp.results$num_taxa"] <- "IDP"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
 
   #TAXA INCLUSION

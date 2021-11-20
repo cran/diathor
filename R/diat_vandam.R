@@ -5,14 +5,14 @@
 #' The input for these functions is the resulting dataframe obtained from the diat_loadData() function, to calculate ecological information for diatoms based on the Van Dam classification
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' Van Dam classification is obtained form:
 #' \itemize{
 #' \item Van Dam, H., Mertens, A., & Sinkeldam, J. (1994). A coded checklist and ecological indicator values of freshwater diatoms from the Netherlands. Netherland Journal of Aquatic Ecology, 28(1), 117-133.
 #' }
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Example using sample data included in the package (sampleData):
 #' data("diat_sampleData")
 #' # First, the diat_loadData() function has to be called to read the data
@@ -58,7 +58,7 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
     vandam.results <- NULL
     return(vandam.results)
   }
-  v1 <- v2 <- vd1 <- vd2 <- vd3 <- vd4 <- vd5 <-NULL
+  v1 <- v2 <- vd1 <- vd2 <- vd3 <- vd4 <- vd5 <- vd6 <- vd7 <-NULL
   #gets the column named "species", everything before that is a sample
   lastcol <- which(colnames(taxaInEco)=="species")
   taxaInRA <- taxaInEco
@@ -77,25 +77,11 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
   if (vandamReports == TRUE & is.na(resultsPath) == FALSE) {
     print("Exporting detailed reports for VanDam ecological preferences")
     print(resultsPath)
-    vandamtaxafile = paste("VanDam Taxa used.txt", sep = "")
-   # write("TAXA USED FOR EACH ECOLOGICAL VARIABLE USING VANDAM's CLASSIFICATION",
-    #      paste(resultsPath, "\\", vandamtaxafile, sep = ""))
-
+    vandamtaxafile = paste("VanDam Taxa used.csv", sep = "")
     write("TAXA USED FOR EACH ECOLOGICAL VARIABLE USING VANDAM's CLASSIFICATION",
           file = file.path(resultsPath,vandamtaxafile))
-
-    # write("These taxa were included because: ", paste(resultsPath,
-    #                                                   "\\", vandamtaxafile, sep = ""), append = TRUE)
     write("These taxa were included because: ", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
-
-    # write("a) they had a reliable classification in VanDam's classification system",
-    #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
-    #       append = TRUE)
     write("a) they had a reliable classification in VanDam's classification system", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
-
-    # write("b) they had a relative abundance in the sample > 0",
-    #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
-    #       append = TRUE)
     write("b) they had a relative abundance in the sample > 0", file = file.path(resultsPath,vandamtaxafile), append = TRUE)
 
   }
@@ -151,6 +137,8 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
       "VD Trophic 3",
       "VD Trophic 4",
       "VD Trophic 5",
+      "VD Trophic 6",
+      "VD Trophic 7",
       "VD Trophic Indet",
       "VD Trophic Taxa used"
     )
@@ -199,11 +187,26 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
                                        lapply(.SD, sum, na.rm = TRUE),
                                        .SDcols = 1:(lastcol - 1)])]
     }
+
+    if (i == 6){
+      lp_data[, vd6 := unlist(taxaInRA[which(vdam_var == 6),
+                                       lapply(.SD, sum, na.rm = TRUE),
+                                       .SDcols = 1:(lastcol - 1)])]
+      lp_data[, vd7 := unlist(taxaInRA[which(vdam_var == 7),
+                                       lapply(.SD, sum, na.rm = TRUE),
+                                       .SDcols = 1:(lastcol - 1)])]
+    }
+
+   #remove possible NAs
+    lp_data[is.na(lp_data)] <- 0
+
     ## indet ##
     if (i < 3) {
       lp_data[      , v1 := round(100 - (vd1 + vd2 + vd3 + vd4), 1)]
-    } else {
+    } else if (i == 4 | i == 5){
       lp_data[      , v1 := round(100 - (vd1 + vd2 + vd3 + vd4 + vd5), 1)]
+    } else if (i == 6){
+      lp_data[      , v1 := round(100 - (vd1 + vd2 + vd3 + vd4 + vd5 + vd6 +vd7), 1)]
     }
     lp_data[v1 < 0, v1 := 0]
     ##  taxa used ##
@@ -232,15 +235,9 @@ diat_vandam <- function(resultLoad, vandamReports=TRUE){
     if (vandamReports & exists("resultsPath")){
       print_taxa = lapply(te2, function(x)taxaInRA$recognizedSp[x])
       for (print.i in seq_along(print_taxa)){
-        # write(paste(str_to_upper(mess_var), "- Sample:", colnames(taxaInRA)[print.i]),
-        #       paste(resultsPath, "\\", vandamtaxafile, sep = ""),
-        #       append = TRUE)
         write(paste(str_to_upper(mess_var), "- Sample:", colnames(taxaInRA)[print.i]),
               file.path(resultsPath, vandamtaxafile),
               append = TRUE)
-#
-#         write(print_taxa[[print.i]], paste(resultsPath,
-#                                            "\\", vandamtaxafile, sep = ""), append = TRUE)
         write(print_taxa[[print.i]], file.path(resultsPath, vandamtaxafile), append = TRUE)
       }
     }

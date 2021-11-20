@@ -22,6 +22,16 @@
 #' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14. DOI:10.1051/kmae/2012018
 "dbc_offline"
 
+#' taxaList
+#'
+#' List of taxa names used in all indices. Gets updated user-end if a new DBC is found
+#'
+#' @format A data frame with names of 9806 taxa
+#' @docType data
+#' @usage data(taxaList)
+#' @encoding UTF-8
+"taxaList"
+
 #' DES
 #'
 #' Index values for diatom species included in the DES index
@@ -30,7 +40,7 @@
 #' @docType data
 #' @usage data(des)
 #' @encoding UTF-8
-#' @source \url{http://pascal-francis.inist.fr/vibad/index.php?action=getRecordDetail&idt=PASCAL8060205402}
+#' @source \url{https://pascal-francis.inist.fr/vibad/index.php?action=getRecordDetail&idt=PASCAL8060205402}
 #' @references Descy, J. P. 1979. A new approach to water qualityestimation  using  diatom.  Beih.  Nov  Hedw. 64:305-323
 "des"
 
@@ -152,3 +162,40 @@
 #' @source \url{https://link.springer.com/article/10.1007/BF00003802}
 #' @references Kelly, M. G., & Whitton, B. A. (1995). The trophic diatom index: a new index for monitoring eutrophication in rivers. Journal of Applied Phycology, 7(4), 433-444.
 "tdi"
+
+#' PBIDW
+#'
+#' Index values for diatom species included in the PBIDW index
+#'
+#' @format A data frame with the ecological values for 79 species
+#' @docType data
+#' @usage data(pbidw)
+#' @encoding UTF-8
+#' @source \url{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.689.5469&rep=rep1&type=pdf#page=85}
+#' @references Castro-Roa, D., & Pinilla-Agudelo, G. (2014). Periphytic diatom index for assessing the ecological quality of the Colombian Andean urban wetlands of Bogotá. Limnetica, 33(2), 297-312.
+"pbidw"
+
+#' DISP
+#'
+#' Index values for diatom species included in the DISP index
+#'
+#' @format A data frame with the ecological values for 143 species
+#' @docType data
+#' @usage data(disp)
+#' @encoding UTF-8
+#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X18305478}
+#' @references Stenger-Kovács, C., Körmendi, K., Lengyel, E., Abonyi, A., Hajnal, É., Szabó, B., Buczkó, K. & Padisák, J. (2018). Expanding the trait-based concept of benthic diatoms: Development of trait-and species-based indices for conductivity as the master variable of ecological status in continental saline lakes. Ecological Indicators, 95, 63-74.
+"disp"
+
+#' CEMFGS_RB
+#'
+#' Index values for diatom species combining their ecological guilds with their size classes
+#'
+#' @format A data frame with the ecological values for 495 species
+#' @docType data
+#' @usage data(cemfgs_rb)
+#' @encoding UTF-8
+#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1730420X}
+#' @references B-Béres, V., Török, P., Kókai, Z., Lukács, Á., Enikő, T., Tóthmérész, B., & Bácsi, I. (2017). Ecological background of diatom functional groups: Comparability of classification systems. Ecological Indicators, 82, 183-188.
+"cemfgs_rb"
+

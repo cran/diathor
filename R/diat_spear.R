@@ -1,5 +1,6 @@
 #' Calculates the SPEAR(herbicides) Index (SPEAR)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -11,7 +12,7 @@
 #'
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -31,7 +32,7 @@
 ###### ---------- FUNCTION FOR SPEAR INDEX (Wood et al. 2019) ---------- ########
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with SPEAR index per sample
-diat_spear <- function(resultLoad){
+diat_spear <- function(resultLoad, maxDistTaxa = 2){
 
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
@@ -45,7 +46,6 @@ diat_spear <- function(resultLoad){
   taxaInRA <- resultLoad[[1]]
 
   #Loads the species list specific for this index
-  #spearDB <- read.csv("../Indices/spear.csv") #uses the external csv file
   spearDB <- diathor::spear
 
   #creates a species column with the rownames to fit in the script
@@ -57,59 +57,98 @@ diat_spear <- function(resultLoad){
       spearDB$spear_v[i] <- ""
     }
   }
+  print("Calculating SPEAR index")
 
-  #exact matches species in input data to acronym from index
-  # taxaInRA$spear_v <- as.integer(spearDB$spear_v[match(taxaInRA$acronym, trimws(spearDB$acronym))])
-
-
-
-  #the ones still not found (NA), try against fullspecies
   taxaInRA$spear_v <- NA
   for (i in 1:nrow(taxaInRA)) {
     if (is.na(taxaInRA$spear_v[i])){
-      taxaInRA$spear_v[i] <- spearDB$spear_v[match(trimws(rownames(taxaInRA[i,])), trimws(spearDB$fullspecies))]
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search.
+      spname <- trimws(tolower(rownames(taxaInRA[i,])))
+
+      species_found <- spearDB[stringdist::ain(trimws(tolower(spearDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$spear_v))))
+        taxaInRA$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$spear_v))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- spearDB[stringdist::ain(trimws(tolower(spearDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$spear_v[1]))))
+            taxaInRA$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaInRA$spear_v[i] <- vvalue
     }
   }
-
-  #removes NA from taxaInRA
-  # taxaInRA[is.na(taxaInRA)] <- 0
 
   #gets the column named "new_species", everything before that is a sample
   lastcol <- which(colnames(taxaInRA)=="new_species")
 
   #######--------SPEAR INDEX START --------#############
-  print("Calculating SPEAR index")
+
   #creates results dataframe
   spear.results <- data.frame(matrix(ncol = 2, nrow = (lastcol-1)))
-  colnames(spear.results) <- c("SPEAR", "Precision")
+  colnames(spear.results) <- c("SPEAR", "num_taxa")
   #finds the column
   spear_v <- (taxaInRA[,"spear_v"])
-  #PROGRESS BAR
+
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaInRA$spear_v)) / nrow(taxaInRA))*100),1)
+  print(paste("Taxa recognized to be used in SPEAR index: ", number_recognized_taxa, "%"))
+
+ #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    SPEARtaxaused <- (length(which(!is.na(spear_v))) * 100 / length(spear_v))
+    #Revised v0.0.8
+    num_taxa <- length(which(spear_v * taxaInRA[,sampleNumber] > 0))
     SPEAR <- sum((log10(as.double(taxaInRA[,sampleNumber])+1)*as.double(spear_v)), na.rm = TRUE)/sum(log10(as.double(taxaInRA[,sampleNumber])+1), na.rm = TRUE) #raw value
     SPEAR <- SPEAR * 100
-    spear.results[sampleNumber, ] <- c(SPEAR, SPEARtaxaused)
+    spear.results[sampleNumber, ] <- c(SPEAR, num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
   close(pb)
   #######--------SPEAR INDEX: END--------############
-  #PRECISION
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
-  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, spear.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, spear.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="spear.results$Precision"] <- "SPEAR"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="spear.results$num_taxa"] <- "SPEAR"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
-
-
 
   #TAXA INCLUSION
   #taxa with acronyms

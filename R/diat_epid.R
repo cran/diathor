@@ -1,5 +1,6 @@
 #' Calculates the EPID index (EPID)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -10,7 +11,7 @@
 #' }
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. <https://doi.org/10.1016/j.ecolind.2019.105951>
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. <https://doi:10.1016/j.ecolind.2019.105951>
 #' }
 #' @examples
 #' \donttest{
@@ -30,7 +31,7 @@
 ###### ---------- FUNCTION FOR EPID INDEX (Dell'Uomo) ---------- ########
 ### INPUT: resultLoad Data. Data needs to be in RA for this index, so if it isn't, the function converts it
 ### OUTPUTS: dataframe with EPID index per sample
-diat_epid <- function(resultLoad){
+diat_epid <- function(resultLoad, maxDistTaxa = 2){
 
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
@@ -43,64 +44,111 @@ diat_epid <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]] #input data
   #Loads the species list specific for this index
-  #epidDB <- read.csv("../Indices/epid.csv") #uses the external csv file
   epidDB <- diathor::epid
 
   #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
   #if acronyms exist, use them, its more precise
 
-  # #exact matches species in input data to acronym from index
-  # taxaIn$epid_v <- epidDB$epid_v[match(taxaIn$acronym, trimws(epidDB$acronym))]
-  # taxaIn$epid_s <- epidDB$epid_s[match(taxaIn$acronym, trimws(epidDB$acronym))]
-  #
-  #   #the ones still not found (NA), try against fullspecies
   taxaIn$epid_v <- NA
   taxaIn$epid_s <- NA
-    for (i in 1:nrow(taxaIn)) {
-      if (is.na(taxaIn$epid_s[i]) | is.na(taxaIn$epid_v[i])){
-        taxaIn$epid_v[i] <- epidDB$epid_v[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
-        taxaIn$epid_s[i] <- epidDB$epid_s[match(trimws(rownames(taxaIn[i,])), trimws(epidDB$fullspecies))]
-      }
-    }
+  print("Calculating EPID index")
+  for (i in 1:nrow(taxaIn)) {
+    if (is.na(taxaIn$epid_s[i]) | is.na(taxaIn$epid_v[i])){
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
 
+      species_found <- epidDB[stringdist::ain(trimws(tolower(epidDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$epid_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$epid_s))))
+        taxaIn$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$epid_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$epid_s))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- epidDB[stringdist::ain(trimws(tolower(epidDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$epid_v[1]))))
+            svalue <- as.numeric(names(which.max(table(species_found$epid_s[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+            svalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaIn$epid_v[i] <- vvalue
+      taxaIn$epid_s[i] <- svalue
+    }
+  }
   #gets the column named "new_species", everything before that is a sample
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------EPID INDEX START --------#############
-  print("Calculating EPID index")
+
   #creates results dataframe
   epid.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(epid.results) <- c("EPID", "EPID20", "Precision")
+  colnames(epid.results) <- c("EPID", "EPID20", "num_taxa")
   #finds the column
   epid_s <- (taxaIn[,"epid_s"])
   epid_v <- (taxaIn[,"epid_v"])
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$epid_s)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in EPID index: ", number_recognized_taxa, "%"))
+
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    EPIDtaxaused <- (length(which(epid_s * taxaIn[,sampleNumber] > 0))*100 / length(epid_s))
+    # New in v0.0.8
+    num_taxa <- length(which(epid_s * taxaIn[,sampleNumber] > 0))
     #remove the NA
     epid_s[is.na(epid_s)] = 0
     epid_v[is.na(epid_v)] = 0
     EPID <- sum((taxaIn[,sampleNumber]*as.double(epid_s)*as.double(epid_v)))/sum(taxaIn[,sampleNumber]*as.double(epid_v)) #raw value
     EPID20 <- (-4.75*EPID)+20
-    epid.results[sampleNumber, ] <- c(EPID, EPID20,EPIDtaxaused)
+    epid.results[sampleNumber, ] <- c(EPID, EPID20,num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
   close(pb)
   #######--------EPID INDEX: END--------############
-  #PRECISION
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
-  #precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, epid.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, epid.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
-  names(precisionmatrix)[names(precisionmatrix)=="epid.results$Precision"] <- "EPID"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="epid.results$num_taxa"] <- "EPID"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
 
 

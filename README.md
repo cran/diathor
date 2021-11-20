@@ -37,6 +37,14 @@ Guild classification is obtained from:
     guilds of diatoms in European rivers. Knowledge and management of
     aquatic ecosystems, 406: 1-14.
     <https://www.kmae-journal.org/articles/kmae/abs/2012/03/kmae120025/kmae120025.html>
+    
+The combined classification of size classes and guilds is obtained from:
+
+  - B-Béres, V., Török, P., Kókai, Z., Lukács, Á., Enikő, T., Tóthmérész, 
+    B., & Bácsi, I. (2017). Ecological background of diatom functional 
+    groups: Comparability of classification systems. 
+    Ecological Indicators, 82, 183-188.
+    <https://www.sciencedirect.com/science/article/abs/pii/S1470160X1730420X>
 
 Ecological preferences are obtained form:
 
@@ -104,7 +112,17 @@ biotic index is retrieved from their original sources:
     Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic
     diatoms as indicators of herbicide toxicity in rivers–A new SPEcies
     At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
-
+  
+  - **PBIDW**: Castro-Roa, D., & Pinilla-Agudelo, G. (2014). Periphytic 
+    diatom index for assessing the ecological quality of the Colombian 
+    Andean urban wetlands of Bogotá. Limnetica, 33(2), 297-312.
+  
+  - **DISP**: Stenger-Kovács, C., Körmendi, K., Lengyel, E., Abonyi, A., 
+    Hajnal, É., Szabó, B., Buczkó, K. & Padisák, J. (2018). Expanding the trait-based 
+    concept of benthic diatoms: Development of trait-and species-based indices 
+    for conductivity as the master variable of ecological status in continental 
+    saline lakes. Ecological Indicators, 95, 63-74.
+    
 **Sample data included in the package is taken from**:
 
   - Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge;
@@ -127,6 +145,39 @@ And the development version from [GitHub](https://github.com/) with:
 ``` r
 # install.packages("devtools")
 devtools::install_github("limnolab/DiaThor/")
+```
+
+## Example
+
+To demonstrate the most common use of DiaThor, the package includes sample data with the abundance of 164 diatom species in 108 sampled sites (Nicolosi Gelis et al., 2020).
+
+Install the package and load it into the R environment
+``` r
+> install.packages("diathor")
+> library(diathor)
+```
+
+Load the internally included sample data
+``` r
+> data("diat_sampleData")
+```
+
+Run diaThorAll to get all the outputs from the sample data with the default settings, and store the results into the “results” object, to also retain the output within R
+``` r
+> results <- diaThorAll(diat_sampleData) #If the sample data was used
+```
+Note: The package will request the Input file an Output folder through a dialog box
+``` r
+[1] "Select Input file"
+[1] "Select Results folder"
+```
+
+After the Results folder is selected, all the calculations conducted will be shown in the console
+
+Optionally, run each individual function with the results of the diat_loadData() function, for instance:
+``` r
+> loadedData <- diat_loadData() # load data with the diat_loadData() function
+> results <- diat_ips(loadedData ) # use the diat_ips() function to calculate the IPS index with the loaded data
 ```
 
 ## CRAN vs. GitHub package

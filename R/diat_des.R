@@ -1,5 +1,6 @@
 #' Calculates the Descy Index (DES)
 #' @param resultLoad The resulting list obtained from the diat_loadData() function
+#' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @description
 #' The input for all of these functions is the resulting dataframe (resultLoad) obtained from the diat_loadData() function
 #' A CSV or dataframe cannot be used directly with these functions, they have to be loaded first with the diat_loadData() function
@@ -10,7 +11,7 @@
 #' }
 #' Sample data in the examples is taken from:
 #' \itemize{
-#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi.org/10.1016/j.ecolind.2019.105951
+#' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
 #' }
 #' @examples
 #' \donttest{
@@ -31,7 +32,7 @@
 ###### ---------- FUNCTION FOR DES INDEX (Descy 1979) ---------- ########
 ### INPUT: resultLoad Data cannot be in Relative Abuncance
 ### OUTPUTS: dataframe with DES index per sample
-diat_des <- function(resultLoad){
+diat_des <- function(resultLoad, maxDistTaxa = 2){
 
   # First checks if species data frames exist. If not, loads them from CSV files
   if(missing(resultLoad)) {
@@ -44,29 +45,68 @@ diat_des <- function(resultLoad){
 
   taxaIn <- resultLoad[[2]]
 
-
-  ### START NEW CORRECTIONS
   #Loads the species list specific for this index
-  #desDB <- read.csv("../Indices/des.csv") #uses the external csv file
   desDB <- diathor::des
-
-  ##NEWEST CORRECTIONS
-
-   #creates a species column with the rownames to fit in the script
+  #creates a species column with the rownames to fit in the script
   taxaIn$species <- row.names(taxaIn)
   #if acronyms exist, use them, its more precise
 
   # #the ones still not found (NA), try against fullspecies
   taxaIn$des_v <- NA
   taxaIn$des_s <- NA
+  print("Calculating DES index")
+
   for (i in 1:nrow(taxaIn)) {
     if (is.na(taxaIn$des_s[i]) | is.na(taxaIn$des_v[i])){
-      taxaIn$des_v[i] <- desDB$des_v[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
-      taxaIn$des_s[i] <- desDB$des_s[match(trimws(rownames(taxaIn[i,])), trimws(desDB$fullspecies))]
+      # New in v0.0.8
+      # Uses the stringdist package to find species by names heuristically, with a maximum distance = maxDistTaxa
+      # if multiple are found, uses majority consensus to select the correct index value
+      # 1) find the species by heuristic search
+      spname <- trimws(tolower(rownames(taxaIn[i,])))
+
+      species_found <- desDB[stringdist::ain(trimws(tolower(desDB$fullspecies)),spname, maxDist=maxDistTaxa, matchNA = FALSE),]
+      # 2) if found, build majority consensus for sensitivity values
+      if (nrow(species_found) == 1){
+        vvalue <- as.numeric(names(which.max(table(species_found$des_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$des_s))))
+        taxaIn$new_species[i] <- species_found$fullspecies[1]
+      } else if (nrow(species_found) > 1){
+        species_found <- species_found[match(spname, trimws(tolower(species_found$fullspecies)), nomatch=1),]
+        vvalue <- as.numeric(names(which.max(table(species_found$des_v))))
+        svalue <- as.numeric(names(which.max(table(species_found$des_s))))
+      } else if (nrow(species_found) == 0){
+        #species not found, try tautonomy in variety
+        spsplit <- strsplit(spname, " ") #split the name
+        #if has epiteth
+        if (length(spsplit[[1]])>1){
+          #create vectors with possible epiteths
+          newspname <- paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ") #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "subsp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "spp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "ssp.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+          newspname <- c(newspname, paste(spsplit[[1]][[1]], spsplit[[1]][[2]], "var.", spsplit[[1]][[2]], "fo.", spsplit[[1]][[length(spsplit[[1]])]], sep = " ")) #create new sp name
+
+          #search again against all possible epiteths
+          species_found <- desDB[stringdist::ain(trimws(tolower(desDB$fullspecies)),newspname, maxDist=maxDistTaxa, matchNA = FALSE),]
+          if (nrow(species_found) > 0){
+            #found with tautonomy
+            vvalue <- as.numeric(names(which.max(table(species_found$des_v[1]))))
+            svalue <- as.numeric(names(which.max(table(species_found$des_s[1]))))
+            taxaIn$new_species[i] <- species_found$fullspecies[1]
+          } else {
+            #species not found, make everything NA
+            vvalue = NA
+            svalue = NA
+          }
+        }
+      }
+      #records the final consensus value
+      taxaIn$des_v[i] <- vvalue
+      taxaIn$des_s[i] <- svalue
+
     }
   }
-
-  ### FINISH NEW CORRECTIONS
 
   #removes NA from taxaIn
   taxaIn[is.na(taxaIn)] <- 0
@@ -77,44 +117,52 @@ diat_des <- function(resultLoad){
   lastcol <- which(colnames(taxaIn)=="new_species")
 
   #######--------DES INDEX START --------#############
-  print("Calculating DES index")
+
   #creates results dataframe
   des.results <- data.frame(matrix(ncol = 3, nrow = (lastcol-1)))
-  colnames(des.results) <- c("DES", "DES20", "Precision")
+  colnames(des.results) <- c("DES", "DES20", "num_taxa")
   #finds the column
   des_s <- (taxaIn[,"des_s"])
   des_v <- (taxaIn[,"des_v"])
+
+
+  # Prints the number of taxa recognized for this index, regardless of their abundance
+  # It is therefore the same for all samples
+
+  number_recognized_taxa <- round((100 - (sum(is.na(taxaIn$des_s)) / nrow(taxaIn))*100),1)
+  print(paste("Taxa recognized to be used in DES index: ", number_recognized_taxa, "%"))
+
+
   #PROGRESS BAR
   pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
-    DEStaxaused <- (length(which(des_s * taxaIn[,sampleNumber] > 0))*100 / length(des_s))
-
+    #Revised v0.0.8
+    num_taxa <- length(which(des_s * taxaIn[,sampleNumber] > 0))
     #remove the NA
     des_s[is.na(des_s)] = 0
     des_v[is.na(des_v)] = 0
     DES <- sum((taxaIn[,sampleNumber]*as.double(des_s)*as.double(des_v)))/sum(taxaIn[,sampleNumber]*as.double(des_v)) #raw value
     DES20 <- (4.75*DES)-3.75
-    des.results[sampleNumber, ] <- c(DES, DES20,DEStaxaused)
+    des.results[sampleNumber, ] <- c(DES, DES20, num_taxa)
     #update progressbar
     setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
   close(pb)
   #######--------DES INDEX: END--------############
-  #PRECISION
+
+  #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]
-  # precisionmatrix <- read.csv(paste(resultsPath,"\\Precision.csv", sep=""))
-  precisionmatrix <- read.csv(file.path(resultsPath, "Precision.csv"))
-  precisionmatrix <- cbind(precisionmatrix, des.results$Precision)
+  #reads the csv file
+  precisionmatrix <- read.csv(file.path(resultsPath, "num_taxa.csv"))
+  #joins with the precision column
+  precisionmatrix <- cbind(precisionmatrix, des.results$num_taxa)
   precisionmatrix <- precisionmatrix[-(1:which(colnames(precisionmatrix)=="Sample")-1)]
 
-  names(precisionmatrix)[names(precisionmatrix)=="des.results$Precision"] <- "DES"
-  #write.csv(precisionmatrix, paste(resultsPath,"\\Precision.csv", sep=""))
-  write.csv(precisionmatrix, file.path(resultsPath, "Precision.csv"))
+  names(precisionmatrix)[names(precisionmatrix)=="des.results$num_taxa"] <- "DES"
+  write.csv(precisionmatrix, file.path(resultsPath, "num_taxa.csv"))
   #END PRECISION
-
-
 
   #TAXA INCLUSION
   #taxa with acronyms

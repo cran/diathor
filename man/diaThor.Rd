@@ -19,6 +19,10 @@ Guild classification is obtained from:
 \itemize{
 \item Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14. DOI:10.1051/kmae/2012018
 }
+The combined classification of size classes and guilds is obtained from:
+\itemize{
+\item B-Béres, V., Török, P., Kókai, Z., Lukács, Á., Enikő, T., Tóthmérész, B., & Bácsi, I. (2017). Ecological background of diatom functional groups: Comparability of classification systems. Ecological Indicators, 82, 183-188.
+}
 Van Dam classification is obtained form:
 \itemize{
 \item Van Dam, H., Mertens, A., & Sinkeldam, J. (1994). A coded checklist and ecological indicator values of freshwater diatoms from the Netherlands. Netherland Journal of Aquatic Ecology, 28(1), 117-133.
@@ -64,6 +68,12 @@ Species tolerance and their ecological information to calculate each biotic inde
 \itemize{
 \item SPEAR(herbicides): Wood, R. J., Mitrovic, S. M., Lim, R. P., Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic diatoms as indicators of herbicide toxicity in rivers–A new SPEcies At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
 }
+\itemize{
+\item PBIDW: Castro-Roa, D., & Pinilla-Agudelo, G. (2014). Periphytic diatom index for assessing the ecological quality of the Colombian Andean urban wetlands of Bogotá. Limnetica, 33(2), 297-312.
+}
+\itemize{
+\item DISP: Stenger-Kovács, C., Körmendi, K., Lengyel, E., Abonyi, A., Hajnal, É., Szabó, B., Buczkó, K. & Padisák, J. (2018). Expanding the trait-based concept of benthic diatoms: Development of trait-and species-based indices for conductivity as the master variable of ecological status in continental saline lakes. Ecological Indicators, 95, 63-74.
+}
 Sample data included in the package is taken from:
 \itemize{
 \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951.
@@ -88,5 +98,13 @@ diat_ilm()
 diat_lobo()
 diat_sla()
 diat_spear()
+diat_pbidw()
+diat_disp()
+diat_idap()
+diat_cemfgs_rb()
+diat_checkName()
+diat_getDiatBarcode()
+diat_taxaList()
+update_algaebase_list()
 }
 
