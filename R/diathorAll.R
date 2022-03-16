@@ -197,7 +197,7 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
     sampleCol <- rep(sampleNames, ncol(result)) #gets sample names
     result <- tidyr::gather(result) #uses tidyr to rearrange the dataframe in a single column
     result$sampleCol <- sampleCol #adds another column with the sample names
-    colors <- c("#CC1C00", "#5C88DA", "#84BD00", "#FFCD00", "#7C878E", "#E64B35", "#4DBBD5", "#01A087", "#3C5488", "#F39B7F", "#FF410D", "#6EE2FF", "#F7C530", "#95CC5E", "#D0DFE6", "#F79D1E", "#748AA6", "#82451c", "#4b7751", "#5fa413", "#800080", "#690341" )
+    colors <- c("#CC1C00", "#5C88DA", "#84BD00", "#FFCD00", "#7C878E", "#E64B35", "#4DBBD5", "#01A087", "#3C5488", "#F39B7F", "#FF410D", "#6EE2FF", "#F7C530", "#95CC5E", "#D0DFE6", "#F79D1E", "#748AA6", "#82451c", "#4b7751", "#5fa413", "#800080", "#690341", "#ff7f7f", "#008080", "#00a0ff", "#fff000", "#0000ff", "#714d5b", "#bf9424", "#c1aea0", "#3e4c4f")
     key <- result$key
     value <- result$value
     print(ggplot2::ggplot(result, aes(fill=key, y=value, x=sampleCol)) +

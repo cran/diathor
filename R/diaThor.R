@@ -98,7 +98,6 @@
 #' diat_checkName()
 #' diat_getDiatBarcode()
 #' diat_taxaList()
-#' update_algaebase_list()
 #'
 #' @docType package
 #' @name diaThor

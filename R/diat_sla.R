@@ -100,6 +100,11 @@ diat_sla <- function(resultLoad, maxDistTaxa = 2){
             vvalue = NA
             svalue = NA
           }
+        }  else {
+          # length(spsplit[[1]]) =<1
+          #species not found, make everything NA
+          vvalue = NA
+          svalue = NA
         }
       }
       #records the final consensus value
