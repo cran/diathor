@@ -130,7 +130,9 @@ diat_spear <- function(resultLoad, maxDistTaxa = 2){
   print(paste("Taxa recognized to be used in SPEAR index: ", number_recognized_taxa, "%"))
 
  #PROGRESS BAR
-  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  if (interactive()) {
+    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  }
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     #Revised v0.0.8
@@ -139,10 +141,14 @@ diat_spear <- function(resultLoad, maxDistTaxa = 2){
     SPEAR <- SPEAR * 100
     spear.results[sampleNumber, ] <- c(SPEAR, num_taxa)
     #update progressbar
-    setTxtProgressBar(pb, sampleNumber)
+    if (interactive()) {
+      setTxtProgressBar(pb, sampleNumber)
+    }
   }
   #close progressbar
-  close(pb)
+  if (interactive()) {
+    close(pb)
+  }
   #######--------SPEAR INDEX: END--------############
   #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]

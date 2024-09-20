@@ -6,7 +6,7 @@
 #' @docType data
 #' @usage data(diat_sampleData)
 #' @encoding UTF-8
-#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1930946X}
+#' @source \doi{https://doi.org/10.1016/j.ecolind.2019.105951}
 #' @references Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951.
 "diat_sampleData"
 
@@ -18,8 +18,8 @@
 #' @docType data
 #' @usage data(dbc_offline)
 #' @encoding UTF-8
-#' @source \url{https://www.kmae-journal.org/articles/kmae/abs/2012/03/kmae120025/kmae120025.html}
-#' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14. DOI:10.1051/kmae/2012018
+#' @source \doi{10.1051/kmae/2012018}
+#' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14.
 "dbc_offline"
 
 #' taxaList
@@ -112,7 +112,6 @@
 #' @docType data
 #' @usage data(ips)
 #' @encoding UTF-8
-#' @source \url{https://www.oieau.org/eaudoc/notice/ETUDE-DES-METHODES-BIOLOGIQUES-DAPPRECIATION-QUANTITATIVE-DE-LA-QUALITE-DES-EAUX}
 #' @references Coste, M. (1982). Étude des méthodes biologiques d’appréciation quantitative de la qualité des eaux. Rapport Cemagref QE Lyon-AF Bassin Rhône Méditerranée Corse.
 "ips"
 
@@ -136,7 +135,7 @@
 #' @usage data(sla)
 #' @encoding UTF-8
 #' @source \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/aheh.19860140519}
-#' @references Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
+#' @references Sládecek, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 "sla"
 
 #' SPEAR(h)
@@ -147,7 +146,7 @@
 #' @docType data
 #' @usage data(spear)
 #' @encoding UTF-8
-#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X18309683}
+#' @source \doi{https://doi.org/10.1016/j.ecolind.2018.12.035}
 #' @references Wood, R. J., Mitrovic, S. M., Lim, R. P., Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic diatoms as indicators of herbicide toxicity in rivers–A new SPEcies At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
 "spear"
 
@@ -171,7 +170,7 @@
 #' @docType data
 #' @usage data(pbidw)
 #' @encoding UTF-8
-#' @source \url{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.689.5469&rep=rep1&type=pdf#page=85}
+#' @source \doi{https://doi.org/10.23818/limn.33.23}
 #' @references Castro-Roa, D., & Pinilla-Agudelo, G. (2014). Periphytic diatom index for assessing the ecological quality of the Colombian Andean urban wetlands of Bogotá. Limnetica, 33(2), 297-312.
 "pbidw"
 
@@ -183,7 +182,7 @@
 #' @docType data
 #' @usage data(disp)
 #' @encoding UTF-8
-#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X18305478}
+#' @source \doi{https://doi.org/10.1016/j.ecolind.2018.07.026}
 #' @references Stenger-Kovács, C., Körmendi, K., Lengyel, E., Abonyi, A., Hajnal, É., Szabó, B., Buczkó, K. & Padisák, J. (2018). Expanding the trait-based concept of benthic diatoms: Development of trait-and species-based indices for conductivity as the master variable of ecological status in continental saline lakes. Ecological Indicators, 95, 63-74.
 "disp"
 
@@ -195,7 +194,7 @@
 #' @docType data
 #' @usage data(cemfgs_rb)
 #' @encoding UTF-8
-#' @source \url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1730420X}
+#' @source \doi{https://doi.org/10.1016/j.ecolind.2017.07.007}
 #' @references B-Béres, V., Török, P., Kókai, Z., Lukács, Á., Enikő, T., Tóthmérész, B., & Bácsi, I. (2017). Ecological background of diatom functional groups: Comparability of classification systems. Ecological Indicators, 82, 183-188.
 "cemfgs_rb"
 

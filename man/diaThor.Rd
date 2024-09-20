@@ -3,6 +3,7 @@
 \docType{package}
 \encoding{UTF-8}
 \name{diaThor}
+\alias{diathor}
 \alias{diaThor}
 \title{DiaThor: A package to calculate multiple diatom-based biotic indices}
 \description{
@@ -63,7 +64,7 @@ Species tolerance and their ecological information to calculate each biotic inde
 \item LOBO: Lobo, E. A., Bes, D., Tudesque, L., & Ector, L. (2004). Water quality assessment of the Pardinho River, RS, Brazil, using epilithic diatom assemblages and faecal coliforms as biological indicators. Vie et Milieu, 54(2-3), 115-126.
 }
 \itemize{
-\item SLA: Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
+\item SLA: Sládecek, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 }
 \itemize{
 \item SPEAR(herbicides): Wood, R. J., Mitrovic, S. M., Lim, R. P., Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic diatoms as indicators of herbicide toxicity in rivers–A new SPEcies At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
@@ -107,3 +108,13 @@ diat_getDiatBarcode()
 diat_taxaList()
 }
 
+\author{
+\strong{Maintainer}: Joaquín Cochero \email{jcochero@ilpla.edu.ar} (\href{https://orcid.org/0000-0003-3957-6819}{ORCID})
+
+Authors:
+\itemize{
+  \item Maria Mercedes Nicolosi Gelis \email{mercedesnicolosi@ilpla.edu.ar} (\href{https://orcid.org/0000-0001-6324-7930}{ORCID})
+  \item Maria Belen Sathicq \email{mbelen@ilpla.edu.ar} (\href{https://orcid.org/0000-0002-3534-8950}{ORCID})
+}
+
+}

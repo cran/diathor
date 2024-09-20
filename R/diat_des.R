@@ -139,7 +139,10 @@ diat_des <- function(resultLoad, maxDistTaxa = 2){
 
 
   #PROGRESS BAR
-  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  if (interactive()) {
+    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  }
+
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     #Revised v0.0.8
@@ -151,10 +154,15 @@ diat_des <- function(resultLoad, maxDistTaxa = 2){
     DES20 <- (4.75*DES)-3.75
     des.results[sampleNumber, ] <- c(DES, DES20, num_taxa)
     #update progressbar
-    setTxtProgressBar(pb, sampleNumber)
+    if (interactive()) {
+      setTxtProgressBar(pb, sampleNumber)
+    }
   }
   #close progressbar
-  close(pb)
+  if (interactive()) {
+    close(pb)
+  }
+
   #######--------DES INDEX: END--------############
 
   #PRECISION RECORDING
@@ -180,11 +188,14 @@ diat_des <- function(resultLoad, maxDistTaxa = 2){
   for (i in 1:ncol(inclusionmatrix)){
     newinclusionmatrix[1:nrow(inclusionmatrix),i] <- as.character(inclusionmatrix[1:nrow(inclusionmatrix),i])
   }
-  if (nrow(newinclusionmatrix) > length(taxaIncluded)){
-    newinclusionmatrix[1:length(taxaIncluded), ncol(newinclusionmatrix)] <- taxaIncluded
-  } else {
-    newinclusionmatrix[1:nrow(newinclusionmatrix), ncol(newinclusionmatrix)] <- taxaIncluded
-  }
+  #check that taxaIncluded is at least 1
+  if (length(taxaIncluded) > 0) {
+    if (nrow(newinclusionmatrix) > length(taxaIncluded)){
+      newinclusionmatrix[1:length(taxaIncluded), ncol(newinclusionmatrix)] <- taxaIncluded
+    } else {
+      newinclusionmatrix[1:nrow(newinclusionmatrix), ncol(newinclusionmatrix)] <- taxaIncluded
+    }
+  } else{newinclusionmatrix[is.na(newinclusionmatrix) == FALSE] <- NA}
   inclusionmatrix <- newinclusionmatrix
   colnames(inclusionmatrix) <- colnamesInclusionMatrix
   inclusionmatrix <- inclusionmatrix[-(1:which(colnames(inclusionmatrix)=="Eco.Morpho")-1)]
@@ -201,11 +212,15 @@ diat_des <- function(resultLoad, maxDistTaxa = 2){
   for (i in 1:ncol(exclusionmatrix)){
     newexclusionmatrix[1:nrow(exclusionmatrix),i] <- as.character(exclusionmatrix[1:nrow(exclusionmatrix),i])
   }
-  if (nrow(newexclusionmatrix) > length(taxaExcluded)){
-    newexclusionmatrix[1:length(taxaExcluded), ncol(newexclusionmatrix)] <- taxaExcluded
-  } else {
-    newexclusionmatrix[1:nrow(newexclusionmatrix), ncol(newexclusionmatrix)] <- taxaExcluded
-  }
+  #check that taxaExcluded is at least 1
+  if (length(taxaExcluded) > 0) {
+    if (nrow(newexclusionmatrix) > length(taxaExcluded)){
+      newexclusionmatrix[1:length(taxaExcluded), ncol(newexclusionmatrix)] <- taxaExcluded
+    } else {
+      newexclusionmatrix[1:nrow(newexclusionmatrix), ncol(newexclusionmatrix)] <- taxaExcluded
+    }
+  }else{newexclusionmatrix[is.na(newexclusionmatrix) == FALSE] <- NA}
+
   exclusionmatrix <- newexclusionmatrix
   colnames(exclusionmatrix) <- colnamesInclusionMatrix
   exclusionmatrix <- exclusionmatrix[-(1:which(colnames(exclusionmatrix)=="Eco.Morpho")-1)]

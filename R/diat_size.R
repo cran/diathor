@@ -60,25 +60,25 @@ diat_size <- function(resultLoad){
   taxaInRA <- taxaInEco
   taxaInRA_samples = taxaInRA[, 1:(lastcol - 1)]
   data.table::setDT(taxaInRA_samples)
-  setnafill(taxaInRA_samples, fill = 0)
-  rel_abu  = apply(taxaInRA_samples, 2, function(x)
+  data.table::setnafill(taxaInRA_samples, fill = 0)
+  rel_abu  <- apply(taxaInRA_samples, 2, function(x)
     round(x / sum(x) * 100, 2))
-  taxaInRA = cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
-  sampleNames = colnames(taxaInRA[1:(lastcol - 1)])
+  taxaInRA <- cbind(rel_abu, taxaInRA[, lastcol:ncol(taxaInRA)])
+  sampleNames <- colnames(taxaInRA[1:(lastcol - 1)])
   data.table::setDT(taxaInRA)
-  size_v = taxaInRA[, which(grepl(pattern = "classe_de_taille", names(taxaInRA))), with = FALSE]
+  size_v <- taxaInRA[, which(grepl(pattern = "classe_de_taille", names(taxaInRA))), with = FALSE]
   size_v[is.na(size_v)] = 0
 
-  size.results = data.table(
-    sc1 = unlist(taxaInRA[which(size_v == 1), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
+  size.results <- data.table::data.table(
+    sc1 <- unlist(taxaInRA[which(size_v == 1), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
                                                                                              1)]),
-    sc2 = unlist(taxaInRA[which(size_v == 2), lapply(.SD, sum, na.rm =
+    sc2 <- unlist(taxaInRA[which(size_v == 2), lapply(.SD, sum, na.rm =
                                                        TRUE), .SDcols = 1:(lastcol - 1)]),
-    sc3 = unlist(taxaInRA[which(size_v == 3), lapply(.SD, sum, na.rm =
+    sc3 <- unlist(taxaInRA[which(size_v == 3), lapply(.SD, sum, na.rm =
                                                        TRUE), .SDcols = 1:(lastcol - 1)]),
-    sc4 = unlist(taxaInRA[which(size_v == 4), lapply(.SD, sum, na.rm =
+    sc4 <- unlist(taxaInRA[which(size_v == 4), lapply(.SD, sum, na.rm =
                                                        TRUE), .SDcols = 1:(lastcol - 1)]),
-    sc5 = unlist(taxaInRA[which(size_v == 5), lapply(.SD, sum, na.rm =
+    sc5 <- unlist(taxaInRA[which(size_v == 5), lapply(.SD, sum, na.rm =
                                                        TRUE), .SDcols = 1:(lastcol - 1)])
   )
   size.results[, `Size_class_Indet` := round(100 - (sc1 + sc2 + sc3 + sc4 + sc5), 1)]
@@ -100,7 +100,6 @@ diat_size <- function(resultLoad){
   )
   size.results <- as.data.frame(size.results) #need to convert it to dataframe explicitly to plot
   return(size.results)
-
 
 }
 

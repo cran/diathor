@@ -83,8 +83,9 @@ diat_guilds <- function(resultLoad){
 
   colnames(guilds.results) <- guild_labels
   print("Calculating ecological guilds")
-  pb <- txtProgressBar(min = 1, max = (lastcol - 1), style = 3)
-
+  if (interactive()) {
+    pb <- txtProgressBar(min = 1, max = (lastcol - 1), style = 3)
+  }
   ## -- loop to fill guild table
   for (sampleNumber in 1:(lastcol - 1)) {
     # get columns with each guild and remove NAs
@@ -151,9 +152,13 @@ diat_guilds <- function(resultLoad){
     guild_values <- c(guild_HP_ab, guild_LP_ab, guild_Mot_ab,
                       guild_Plank_ab, guild_indet, guildtaxaused)
     guilds.results[sampleNumber, ] <- guild_values
-    setTxtProgressBar(pb, sampleNumber)
+    if (interactive()) {
+      setTxtProgressBar(pb, sampleNumber)
+    }
   }
-  close(pb)
+  if (interactive()) {
+    close(pb)
+  }
   return(guilds.results)
 
 

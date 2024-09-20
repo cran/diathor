@@ -49,7 +49,9 @@ diat_diversity <- function(resultLoad){
 
   #PROGRESS BAR
   print("Calculating diversity indices")
-  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  if (interactive()) {
+    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
+  }
   #samples are columns
 
   for (i in 1:(lastcol-1)){
@@ -61,10 +63,15 @@ diat_diversity <- function(resultLoad){
     diversityIndices[2,i] <- shannon
     diversityIndices[3,i] <- evenness
     #update progressbar
-    setTxtProgressBar(pb, i)
+    if (interactive()) {
+      setTxtProgressBar(pb, i)
+    }
   }
   #close progressbar
-  close(pb)
+  if (interactive()) {
+    close(pb)
+  }
+
   #RESULTS
   diversity.results<-as.data.frame(t(diversityIndices)) #transposes the diversity matrix to plot
   rownames(diversity.results) <- colnames(taxaIn[1:(lastcol-1)])

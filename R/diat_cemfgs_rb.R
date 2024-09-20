@@ -59,6 +59,7 @@ diat_cemfgs_rb <- function(resultLoad){
   #gets the column named "new_species", everything before that is a sample
   lastcol <- which(colnames(taxaIn)=="new_species")
 
+
   #######--------CEMFGS_RG INDEX START --------#############
   print("Calculating CEMFGS_RG")
   #creates results dataframe
@@ -77,48 +78,128 @@ diat_cemfgs_rb <- function(resultLoad){
 
   data.table::setDT(taxaIn)
 
-  cemfgs_rb.results <- suppressWarnings(data.table(
-    HS1 = unlist(taxaIn[which(cemfgs_rb == "HS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                             1)]),
-    HS2 = unlist(taxaIn[which(cemfgs_rb == "HS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    HS3 = unlist(taxaIn[which(cemfgs_rb == "HS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    HS4 = unlist(taxaIn[which(cemfgs_rb == "HS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    HS5 = unlist(taxaIn[which(cemfgs_rb == "HS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    LS1 = unlist(taxaIn[which(cemfgs_rb == "LS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    LS2 = unlist(taxaIn[which(cemfgs_rb == "LS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    LS3 = unlist(taxaIn[which(cemfgs_rb == "LS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    LS4 = unlist(taxaIn[which(cemfgs_rb == "LS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    LS5 = unlist(taxaIn[which(cemfgs_rb == "LS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    MS1 = unlist(taxaIn[which(cemfgs_rb == "MS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    MS2 = unlist(taxaIn[which(cemfgs_rb == "MS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    MS3 = unlist(taxaIn[which(cemfgs_rb == "MS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    MS4 = unlist(taxaIn[which(cemfgs_rb == "MS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    MS5 = unlist(taxaIn[which(cemfgs_rb == "MS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    PS1 = unlist(taxaIn[which(cemfgs_rb == "PS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    PS2 = unlist(taxaIn[which(cemfgs_rb == "PS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    PS3 = unlist(taxaIn[which(cemfgs_rb == "PS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    PS4 = unlist(taxaIn[which(cemfgs_rb == "PS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)]),
-    PS5 = unlist(taxaIn[which(cemfgs_rb == "PS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol -
-                                                                                                  1)])
+  cemfgs_rb.results <- suppressWarnings(data.table::data.table(
+    HS1 = if (nrow(taxaIn[which(cemfgs_rb == "HS1")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "HS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    HS2 = if (nrow(taxaIn[which(cemfgs_rb == "HS2")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "HS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    HS3 = if (nrow(taxaIn[which(cemfgs_rb == "HS3")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "HS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    HS4 = if (nrow(taxaIn[which(cemfgs_rb == "HS4")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "HS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    HS5 = if (nrow(taxaIn[which(cemfgs_rb == "HS5")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "HS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    LS1 = if (nrow(taxaIn[which(cemfgs_rb == "LS1")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "LS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    LS2 = if (nrow(taxaIn[which(cemfgs_rb == "LS2")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "LS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    LS3 = if (nrow(taxaIn[which(cemfgs_rb == "LS3")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "LS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    LS4 = if (nrow(taxaIn[which(cemfgs_rb == "LS4")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "LS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    LS5 = if (nrow(taxaIn[which(cemfgs_rb == "LS5")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "LS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    MS1 = if (nrow(taxaIn[which(cemfgs_rb == "MS1")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "MS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    MS2 = if (nrow(taxaIn[which(cemfgs_rb == "MS2")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "MS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    MS3 = if (nrow(taxaIn[which(cemfgs_rb == "MS3")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "MS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    MS4 = if (nrow(taxaIn[which(cemfgs_rb == "MS4")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "MS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    MS5 = if (nrow(taxaIn[which(cemfgs_rb == "MS5")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "MS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    PS1 = if (nrow(taxaIn[which(cemfgs_rb == "PS1")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "PS1"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    PS2 = if (nrow(taxaIn[which(cemfgs_rb == "PS2")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "PS2"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    PS3 = if (nrow(taxaIn[which(cemfgs_rb == "PS3")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "PS3"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    PS4 = if (nrow(taxaIn[which(cemfgs_rb == "PS4")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "PS4"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    },
+
+    PS5 = if (nrow(taxaIn[which(cemfgs_rb == "PS5")]) == 0) {
+      rep(0, lastcol - 1)
+    } else {
+      unlist(taxaIn[which(cemfgs_rb == "PS5"), lapply(.SD, sum, na.rm = TRUE), .SDcols = 1:(lastcol - 1)])
+    }
   ))
+
   #replace NAs for 0
   cemfgs_rb.results[is.na(cemfgs_rb.results)] = 0
   cemfgs_rb.results[, `CEMFGS_RB_Indet` := round(100 - ( HS1 + HS2 + HS3 + HS4 + HS5 + LS1 + LS2 + LS3 + LS4 + LS5 + MS1 + MS2 + MS3 + MS4 + MS5 + PS1 + PS2 + PS3 + PS4 + PS5), 1)]
@@ -155,11 +236,15 @@ diat_cemfgs_rb <- function(resultLoad){
   for (i in 1:ncol(inclusionmatrix)){
     newinclusionmatrix[1:nrow(inclusionmatrix),i] <- as.character(inclusionmatrix[1:nrow(inclusionmatrix),i])
   }
-  if (nrow(newinclusionmatrix) > length(taxaIncluded)){
-    newinclusionmatrix[1:length(taxaIncluded), ncol(newinclusionmatrix)] <- taxaIncluded
-  } else {
-    newinclusionmatrix[1:nrow(newinclusionmatrix), ncol(newinclusionmatrix)] <- taxaIncluded
-  }
+  #check that taxaIncluded is at least 1
+  if (length(taxaIncluded) > 0) {
+    if (nrow(newinclusionmatrix) > length(taxaIncluded)){
+      newinclusionmatrix[1:length(taxaIncluded), ncol(newinclusionmatrix)] <- taxaIncluded
+    } else {
+      newinclusionmatrix[1:nrow(newinclusionmatrix), ncol(newinclusionmatrix)] <- taxaIncluded
+    }
+  } else{newinclusionmatrix[is.na(newinclusionmatrix) == FALSE] <- NA}
+
   inclusionmatrix <- newinclusionmatrix
   colnames(inclusionmatrix) <- colnamesInclusionMatrix
   inclusionmatrix <- inclusionmatrix[-(1:which(colnames(inclusionmatrix)=="Eco.Morpho")-1)]
@@ -174,11 +259,15 @@ diat_cemfgs_rb <- function(resultLoad){
   for (i in 1:ncol(exclusionmatrix)){
     newexclusionmatrix[1:nrow(exclusionmatrix),i] <- as.character(exclusionmatrix[1:nrow(exclusionmatrix),i])
   }
-  if (nrow(newexclusionmatrix) > nrow(taxaExcluded)){
-    newexclusionmatrix[1:nrow(taxaExcluded), ncol(newexclusionmatrix)] <- taxaExcluded
-  } else {
-    newexclusionmatrix[1:nrow(newexclusionmatrix), ncol(newexclusionmatrix)] <- taxaExcluded
-  }
+  #check that taxaExcluded is at least 1
+  if (length(taxaExcluded) > 0) {
+    if (nrow(newexclusionmatrix) > nrow(taxaExcluded)){
+      newexclusionmatrix[1:nrow(taxaExcluded), ncol(newexclusionmatrix)] <- taxaExcluded
+    } else {
+      newexclusionmatrix[1:nrow(newexclusionmatrix), ncol(newexclusionmatrix)] <- taxaExcluded
+    }
+  }else{newexclusionmatrix[is.na(newexclusionmatrix) == FALSE] <- NA}
+
   exclusionmatrix <- newexclusionmatrix
   colnames(exclusionmatrix) <- colnamesInclusionMatrix
   exclusionmatrix <- exclusionmatrix[-(1:which(colnames(exclusionmatrix)=="Eco.Morpho")-1)]

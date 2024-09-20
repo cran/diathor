@@ -9,7 +9,7 @@
 A data frame with the ecological values for 79 species
 }
 \source{
-\url{https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.689.5469&rep=rep1&type=pdf#page=85}
+\doi{https://doi.org/10.23818/limn.33.23}
 }
 \usage{
 data(pbidw)

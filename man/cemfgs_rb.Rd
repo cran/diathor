@@ -9,7 +9,7 @@
 A data frame with the ecological values for 495 species
 }
 \source{
-\url{https://www.sciencedirect.com/science/article/abs/pii/S1470160X1730420X}
+\doi{https://doi.org/10.1016/j.ecolind.2017.07.007}
 }
 \usage{
 data(cemfgs_rb)
