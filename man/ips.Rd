@@ -8,6 +8,9 @@
 \format{
 A data frame with the ecological values for 6881 species
 }
+\source{
+\url{https://www.documentation.eauetbiodiversite.fr/notice/etude-des-methodes-biologiques-d-appreciation-quantitative-de-la-qualite-des-eaux0}
+}
 \usage{
 data(ips)
 }

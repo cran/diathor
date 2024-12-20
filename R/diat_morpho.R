@@ -78,10 +78,7 @@ diat_morpho <- function(resultLoad, isRelAb = FALSE){
   taxaInRA_samples = taxaInRA[,1:(lastcol-1)]
   #   #PROGRESS BAR
   print("Calculating chloroplasts and biovolume")
-
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = 3, style = 3)
-  }
+  pb <- txtProgressBar(min = 1, max = 3, style = 3)
   for (i in 1:3){
     lp_var = switch(i,
                     taxaInRA[, "chloroplast_number"],
@@ -116,13 +113,9 @@ diat_morpho <- function(resultLoad, isRelAb = FALSE){
     rownames(lp_data) = sampleNames
     assign(x = final_name,
            value = lp_data)
-    if (interactive()) {
-      setTxtProgressBar(pb, i)
-    }
+    setTxtProgressBar(pb, i)
   }
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
   #Outputs
   names(numcloroplastos.result)
   morphoresultTable <- list(as.data.frame(numcloroplastos.result),

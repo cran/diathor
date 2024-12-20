@@ -128,10 +128,7 @@ diat_pbidw <- function(resultLoad, maxDistTaxa = 2){
 
 
   #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  }
-
+  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     #Revised v0.0.8
@@ -141,14 +138,10 @@ diat_pbidw <- function(resultLoad, maxDistTaxa = 2){
     PBIDW <- sum((as.double(pbidw_v)))/length(which(pbidw_v * taxaIn[,sampleNumber] > 0)) #raw value
     pbidw.results[sampleNumber, ] <- c(PBIDW, num_taxa)
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, sampleNumber)
-    }
+    setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
   #######--------PBIDW INDEX: END--------############
 
   #PRECISION RECORDING

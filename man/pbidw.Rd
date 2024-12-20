@@ -9,7 +9,7 @@
 A data frame with the ecological values for 79 species
 }
 \source{
-\doi{https://doi.org/10.23818/limn.33.23}
+\url{https://www.researchgate.net/publication/270591536_Periphytic_diatom_index_for_assessing_the_ecological_quality_of_the_Colombian_Andean_urban_wetlands_of_Bogota}
 }
 \usage{
 data(pbidw)

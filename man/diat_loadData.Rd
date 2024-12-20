@@ -5,7 +5,13 @@
 \alias{diat_loadData}
 \title{Loads the Data into DiaThor in the correct format}
 \usage{
-diat_loadData(species_df, isRelAb = FALSE, maxDistTaxa = 2, resultsPath)
+diat_loadData(
+  species_df,
+  isRelAb = FALSE,
+  maxDistTaxa = 2,
+  resultsPath,
+  updateDBC = TRUE
+)
 }
 \arguments{
 \item{species_df}{The data frame with your species data. Species as rows, Samples as columns. If empty, a dialog box will prompt to import a CSV file}
@@ -15,6 +21,8 @@ diat_loadData(species_df, isRelAb = FALSE, maxDistTaxa = 2, resultsPath)
 \item{maxDistTaxa}{Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2}
 
 \item{resultsPath}{String. Path for the output data. If empty (default), it will prompt a dialog box to select an output folder}
+
+\item{updateDBC}{Boolean. If TRUE it will attempt to update the database from the DiatBarcode project, otherwise it will use the latest internal database. Default = TRUE}
 }
 \description{
 Loads the CSV or dataframe file, sets the Output folder for the package, and conducts both an exact and an heuristic search of the species' names.

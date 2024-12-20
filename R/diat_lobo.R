@@ -139,11 +139,7 @@ diat_lobo <- function(resultLoad, maxDistTaxa = 2){
   print(paste("Taxa recognized to be used in LOBO index: ", number_recognized_taxa, "%"))
 
     #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  }
-
-
+  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #Revised v0.0.8
     num_taxa <- length(which(lobo_s * taxaIn[,sampleNumber] > 0))
@@ -154,15 +150,10 @@ diat_lobo <- function(resultLoad, maxDistTaxa = 2){
     LOBO20 <- (6.333*LOBO)-5.333
     lobo.results[sampleNumber, ] <- c(LOBO, LOBO20,num_taxa)
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, sampleNumber)
-    }
+    setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
-
+  close(pb)
   #######--------LOBO INDEX: END--------############
   #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]

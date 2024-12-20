@@ -131,10 +131,7 @@ diat_idap <- function(resultLoad, maxDistTaxa = 2){
   print(paste("Taxa recognized to be used in IDAP index: ", number_recognized_taxa, "%"))
 
   #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  }
-
+  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     #Revised v0.0.8
@@ -147,14 +144,10 @@ diat_idap <- function(resultLoad, maxDistTaxa = 2){
     IDAP20 <- (4.75*IDAP)-3.75
     idap.results[sampleNumber, ] <- c(IDAP, IDAP20,num_taxa)
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, sampleNumber)
-    }
+    setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
   #######--------IDAP INDEX: END--------############
 
 

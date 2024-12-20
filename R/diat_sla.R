@@ -7,8 +7,9 @@
 #' so the acronyms and species' names are recognized
 #' References for the index:
 #' \itemize{
-#' \item Sládecek, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
+#' \item Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 #' }
+#'
 #' Sample data in the examples is taken from:
 #' \itemize{
 #' \item Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951. https://doi:10.1016/j.ecolind.2019.105951
@@ -135,10 +136,7 @@ diat_sla <- function(resultLoad, maxDistTaxa = 2){
 
 
   #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  }
-
+  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     # New in v0.0.8
@@ -150,14 +148,10 @@ diat_sla <- function(resultLoad, maxDistTaxa = 2){
     SLA20 <- 20-(4.75*SLA)
     sla.results[sampleNumber, ] <- c(SLA, SLA20, num_taxa)
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, sampleNumber)
-    }
+    setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
 
   #######--------SLA INDEX: END--------############
   #PRECISION RECORDING

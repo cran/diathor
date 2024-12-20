@@ -11,6 +11,7 @@
 #' @param exportFormat Integer. If = 1: only a CSV (external file) will be generated with the output matrices; 2: only an internal R dataframe will be generated; 3: both a CSV and an internal R dataframe are generated. Default = 3
 #' @param exportName String. Prefix for the CSV exported file. Default = "DiaThor_results"
 #' @param color Color code (hex). Default color for bar charts and lolipop plots. Default = "#0073C2"
+#' @param updateDBC Boolean. If TRUE it will attempt to update the database from the DiatBarcode project, otherwise it will use the latest internal database. Default = TRUE
 #' @description
 #' The diaThorAll function is the master function of the package. It calculates all outputs from the data, and places them in the Output folder
 #' The input file for the package is a dataframe or an external CSV file. Species should be listed as rows, with species' names in column 1 (column name should be "species")
@@ -47,8 +48,8 @@
 
 ###### ---------- MASTER FUNCTION, CALCULATES EVERYTHING WITH ALL POSSIBLE OUTPUTS BY DEFAULT  ---------- ########
 
-diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, calculateguilds = TRUE, vandam = TRUE, vandamReports = TRUE, singleResult = TRUE, exportFormat = 3, exportName = "DiaThor_results", plotAll = TRUE, color = "#0073C2"){
-  resultmat <- diat_loadData(species_df, isRelAb, maxDistTaxa, resultsPath)
+diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, calculateguilds = TRUE, vandam = TRUE, vandamReports = TRUE, singleResult = TRUE, exportFormat = 3, exportName = "DiaThor_results", plotAll = TRUE, color = "#0073C2", updateDBC = TRUE){
+  resultmat <- diat_loadData(species_df, isRelAb, maxDistTaxa, resultsPath, updateDBC)
   morpho.results <- diat_morpho(resultmat, isRelAb)
 
   if (exists("morpho.results")){
@@ -74,7 +75,9 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
   pbidw.results <- diat_pbidw(resultmat)
   disp.results <- diat_disp(resultmat)
   cemfgs_rb.results <- diat_cemfgs_rb(resultmat)
-
+  edi.results <- diat_edi(resultmat)
+  ddi.results <- diat_ddi(resultmat)
+  pdise.results <- diat_pdise(resultmat)
 
   #sampledata
   sampleNames <- resultmat[[3]]
@@ -103,7 +106,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                      if(exists("spear.results")){spear.results},
                      if(exists("pbidw.results")){pbidw.results},
                      if(exists("disp.results")){disp.results},
-                     if(exists("cemfgs_rb.results")){cemfgs_rb.results}
+                     if(exists("cemfgs_rb.results")){cemfgs_rb.results},
+                     if(exists("edi.results")){edi.results},
+                     if(exists("ddi.results")){ddi.results},
+                     if(exists("pdise.results")){pdise.results}
                      ))
     #removes the Precision columns
     #singleTable[ , -which(names(singleTable) %in% "Precision")]
@@ -131,7 +137,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                      if(exists("spear.results")){spear.results},
                      if(exists("pbidw.results")){pbidw.results},
                      if(exists("disp.results")){disp.results},
-                     if(exists("cemfgs_rb.results")){cemfgs_rb.results}
+                     if(exists("cemfgs_rb.results")){cemfgs_rb.results},
+                     if(exists("edi.results")){edi.results},
+                     if(exists("ddi.results")){ddi.results},
+                     if(exists("pdise.results")){pdise.results}
     )
 
     names(listOfTables) <- c(if(exists("diversity.results")){"Diversity"},
@@ -154,7 +163,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                          if(exists("spear.results")){"SPEAR index"},
                          if(exists("pbidw.results")){"PBIDW index"},
                          if(exists("disp.results")){"DISP index"},
-                         if(exists("cemfgs_rb.results")){"CEMFGS_RB Classification"}
+                         if(exists("cemfgs_rb.results")){"CEMFGS_RB Classification"},
+                         if(exists("edi.results")){"EDI index"},
+                         if(exists("ddi.results")){"DDI index"},
+                         if(exists("pdise.results")){"PDISE index"}
                          )
 
   }
@@ -344,6 +356,15 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
     if(exists("disp.results")){
       print(loli.plot(as.data.frame(disp.results[,1]), "DISP", 0, 6, samplenames=rownames(disp.results))) #raw index
     }
+    if(exists("edi.results")){
+      print(loli.plot(as.data.frame(edi.results[,1]), "EDI", 0, 10, samplenames=rownames(edi.results))) #raw index
+    }
+    if(exists("ddi.results")){
+      print(loli.plot(as.data.frame(ddi.results[,1]), "DDI", 0, 10, samplenames=rownames(ddi.results))) #raw index
+    }
+    if(exists("pdise.results")){
+      print(loli.plot(as.data.frame(pdise.results[,1]), "PDISE", 0, 6, samplenames=rownames(pdise.results))) #raw index
+    }
     # Close the pdf file
     dev.off()
     print("Plots exported!")
@@ -396,7 +417,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                          as.data.frame(listOfTables[[18]]),
                          as.data.frame(listOfTables[[19]]),
                          as.data.frame(listOfTables[[20]]),
-                         as.data.frame(listOfTables[[21]])
+                         as.data.frame(listOfTables[[21]]),
+                         as.data.frame(listOfTables[[22]]),
+                         as.data.frame(listOfTables[[23]]),
+                         as.data.frame(listOfTables[[24]])
                           )
       names(resultList) <- c("Diversity",
                              "ChloroplastNumber",
@@ -418,7 +442,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                              "SPEAR",
                              "PBIDW",
                              "DISP",
-                             "CEMFGS_RB"
+                             "CEMFGS_RB",
+                             "EDI",
+                             "DDI",
+                             "PDISE"
                              )
       return(resultList)
     }
@@ -458,7 +485,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
            as.data.frame(listOfTables[[18]]),
            as.data.frame(listOfTables[[19]]),
            as.data.frame(listOfTables[[20]]),
-           as.data.frame(listOfTables[[21]])
+           as.data.frame(listOfTables[[21]]),
+           as.data.frame(listOfTables[[22]]),
+           as.data.frame(listOfTables[[23]]),
+           as.data.frame(listOfTables[[24]])
       )
       names(resultList) <- c("Diversity",
                              "ChloroplastNumber",
@@ -480,7 +510,10 @@ diaThorAll <- function(species_df, isRelAb=FALSE, maxDistTaxa = 2, resultsPath, 
                              "SPEAR",
                              "PBIDW",
                              "DISP",
-                             "CEMFGS_RB"
+                             "CEMFGS_RB",
+                             "EDI",
+                             "DDI",
+                             "PDISE"
       )
       return(resultList)
     }

@@ -3,6 +3,7 @@
 #' @param isRelAb Boolean. If set to 'TRUE' it means that your species' data is the relative abundance of each species per site. If FALSE, it means that it the data corresponds to absolute densities. Default = FALSE
 #' @param maxDistTaxa Integer. Number of characters that can differ in the species' names when compared to the internal database's name in the heuristic search. Default = 2
 #' @param resultsPath String. Path for the output data. If empty (default), it will prompt a dialog box to select an output folder
+#' @param updateDBC Boolean. If TRUE it will attempt to update the database from the DiatBarcode project, otherwise it will use the latest internal database. Default = TRUE
 #' @description
 #' Loads the CSV or dataframe file, sets the Output folder for the package, and conducts both an exact and an heuristic search of the species' names.
 #'
@@ -30,7 +31,7 @@
 ### OUTPUTS: a dataframe with the species as matched against the database, with species in RA; Taxaincluded and Taxaexcluded in CSV in the Output
 ### folder, detailing which taxa were recognized and which were not
 
-diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath){
+diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath, updateDBC=TRUE){
   species_file <- NULL
 
   # First checks if species data frames exist. If not, loads them from CSV files
@@ -124,17 +125,24 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   species_df[is.na(species_df)] <- 0
 
 
-  ########## LINK WITH DIAT.BARCODE DATABASE (v.0.1.3)
-  dbc <- diathor::diat_getDiatBarcode() #function that gets the Diat.Barcode database. New version, only returns the CSV, the cleaning is done in this function now
+  if (updateDBC==TRUE){
 
-  ### Double check that the database got loaded correctly or cancel altogether
-  if (!exists("dbc") || is.null(dbc)) {
-    print("Latest version of 'Diat.barcode' unknown.")
-    print("Using internal database, 'Diat.barcode' v.10.1 published on 25-06-2021.")
+    ########## LINK WITH DIAT.BARCODE DATABASE
+    dbc <- diathor::diat_getDiatBarcode() #function that gets the Diat.Barcode database. New version, only returns the CSV, the cleaning is done in this function now
+
+    ### Double check that the database got loaded correctly or cancel altogether
+    if (!exists("dbc") || is.null(dbc)) {
+      print("Latest version of 'Diat.barcode' unknown.")
+      print("Using internal database, 'Diat.barcode' v.10.1 published on 25-06-2021.")
+      dbc <- diathor::dbc_offline
+    }
+
+    ########## END LINK WITH DIAT.BARCODE DATABASE
+  } else {
     dbc <- diathor::dbc_offline
   }
 
-  ########## END LINK WITH DIAT.BARCODE DATABASE
+
   # Remove duplicates by field "species" in diat.barcode
   dbc2 <- as.data.frame(dbc[!duplicated(dbc[,"species"]),]) # Transforms dbc to a dataframe
   ecodata <- dbc2[which(colnames(dbc2) == "species"):ncol(dbc2)] # Keeps only the "species" column onwards
@@ -151,9 +159,7 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   ###### START NAME CHECK
 
   #PROGRESS BAR - SEARCH SPECIES FOR POSSIBLE MISSPELLS
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = nrow(species_df), style = 3)
-  }
+  pb <- txtProgressBar(min = 1, max = nrow(species_df), style = 3)
   #macthing function, uses stringdist package
   for (i in 1:nrow(species_df)){
     #get the species name
@@ -184,14 +190,10 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
       print(paste("Taxon not found in any internal database:", spname))
     }
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, i)
-    }
+    setTxtProgressBar(pb, i)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
 
   ###### END NAME CHECK
 
@@ -215,9 +217,7 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
   colnames(taxaInSp)[(lastcolspecies_df+1):(ncol(taxaInSp)-1)] <- colnames(ecodata) #copies column names
 
   #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = nrow(taxaInSp), style = 3)
-  }
+  pb <- txtProgressBar(min = 1, max = nrow(taxaInSp), style = 3)
   #macthing function, uses stringdist package
   for (i in 1:nrow(taxaInSp)){
     searchvectr <- ecodata[stringdist::ain(ecodata[,"species"],row.names(species_df)[i], maxDist=maxDistTaxa, matchNA = FALSE),] #seaches species by species
@@ -245,15 +245,10 @@ diat_loadData <- function(species_df, isRelAb=FALSE, maxDistTaxa=2, resultsPath)
       taxaInSp[i,"recognizedSp"] <- "Not found"
     }
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, i)
-    }
-
+    setTxtProgressBar(pb, i)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
+  close(pb)
   #END NEW SEARCH
 
   taxaInEco <- taxaInSp

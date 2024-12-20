@@ -128,9 +128,7 @@ diat_epid <- function(resultLoad, maxDistTaxa = 2){
 
 
   #PROGRESS BAR
-  if (interactive()) {
-    pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
-  }
+  pb <- txtProgressBar(min = 1, max = (lastcol-1), style = 3)
   for (sampleNumber in 1:(lastcol-1)){ #for each sample in the matrix
     #how many taxa will be used to calculate?
     # New in v0.0.8
@@ -142,15 +140,10 @@ diat_epid <- function(resultLoad, maxDistTaxa = 2){
     EPID20 <- (-4.75*EPID)+20
     epid.results[sampleNumber, ] <- c(EPID, EPID20,num_taxa)
     #update progressbar
-    if (interactive()) {
-      setTxtProgressBar(pb, sampleNumber)
-    }
+    setTxtProgressBar(pb, sampleNumber)
   }
   #close progressbar
-  if (interactive()) {
-    close(pb)
-  }
-
+  close(pb)
   #######--------EPID INDEX: END--------############
   #PRECISION RECORDING
   resultsPath <- resultLoad[[4]]

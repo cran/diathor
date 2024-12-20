@@ -17,7 +17,8 @@ diaThorAll(
   exportFormat = 3,
   exportName = "DiaThor_results",
   plotAll = TRUE,
-  color = "#0073C2"
+  color = "#0073C2",
+  updateDBC = TRUE
 )
 }
 \arguments{
@@ -44,6 +45,8 @@ diaThorAll(
 \item{plotAll}{Boolean. If set to 'TRUE', plots will be generated for each Output in a PDF file. Default = TRUE}
 
 \item{color}{Color code (hex). Default color for bar charts and lolipop plots. Default = "#0073C2"}
+
+\item{updateDBC}{Boolean. If TRUE it will attempt to update the database from the DiatBarcode project, otherwise it will use the latest internal database. Default = TRUE}
 }
 \description{
 The diaThorAll function is the master function of the package. It calculates all outputs from the data, and places them in the Output folder

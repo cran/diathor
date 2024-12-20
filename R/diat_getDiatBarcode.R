@@ -69,7 +69,7 @@ diat_getDiatBarcode <- function() {
       print("The diatom database in DiaThor is out of date.")
 
       ###### THIS SECTION IS FOR THE CRAN PROJECT ONLY
-      ## The CRAN version does not auto-update the internal database
+      # The CRAN version does not auto-update the internal database
       message("The CRAN version of the package does not auto-update the internal database. Using internal database, 'Diat.barcode' v.10.1 published on 25-06-2021.")
       dbc <- diathor::dbc_offline
       ###### END OF CRAN VERSION
@@ -81,14 +81,17 @@ diat_getDiatBarcode <- function() {
       # dbc <- tryCatch(
       #   {
       #     diatbarcode::get_diatbarcode(version = "last") # loads the latest version of diat.barcode
-      #     print("Latest version of Diat.barcode successfully downloaded. Remember to credit accordingly!")
       #   },
       #   error = function(e) {
       #     print("Latest version of Diat.barcode cannot be downloaded: ", e$message)
       #     print("Using internal database, 'Diat.barcode' v.10.1 published on 25-06-2021. It might need to be updated.")
       #     diathor::dbc_offline
       #   }
+      #
       # )
+      # updated <- isTRUE(!identical(dbc, diathor::dbc_offline))
+      # if (updated==T){print("Latest version of Diat.barcode successfully downloaded. Remember to credit accordingly!")}
+
       ###### END OF GITHUB VERSION
 
     }

@@ -18,6 +18,6 @@ data(sla)
 Index values for diatom species included in the SLA index
 }
 \references{
-Sládecek, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
+Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 }
 \keyword{datasets}

@@ -6,7 +6,7 @@
 #' @docType data
 #' @usage data(diat_sampleData)
 #' @encoding UTF-8
-#' @source \doi{https://doi.org/10.1016/j.ecolind.2019.105951}
+#' @source \doi{10.1016/j.ecolind.2019.105951}
 #' @references Nicolosi Gelis, María Mercedes; Cochero, Joaquín; Donadelli, Jorge; Gómez, Nora. 2020. "Exploring the use of nuclear alterations, motility and ecological guilds in epipelic diatoms as biomonitoring tools for water quality improvement in urban impacted lowland streams". Ecological Indicators, 110, 105951.
 "diat_sampleData"
 
@@ -18,8 +18,8 @@
 #' @docType data
 #' @usage data(dbc_offline)
 #' @encoding UTF-8
-#' @source \doi{10.1051/kmae/2012018}
-#' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14.
+#' @source \url{https://www.kmae-journal.org/articles/kmae/abs/2012/03/kmae120025/kmae120025.html}
+#' @references Rimet F. & Bouchez A., 2012. Life-forms, cell-sizes and ecological guilds of diatoms in European rivers. Knowledge and management of aquatic ecosystems, 406: 1-14. DOI:10.1051/kmae/2012018
 "dbc_offline"
 
 #' taxaList
@@ -112,6 +112,7 @@
 #' @docType data
 #' @usage data(ips)
 #' @encoding UTF-8
+#' @source \url{https://www.documentation.eauetbiodiversite.fr/notice/etude-des-methodes-biologiques-d-appreciation-quantitative-de-la-qualite-des-eaux0}
 #' @references Coste, M. (1982). Étude des méthodes biologiques d’appréciation quantitative de la qualité des eaux. Rapport Cemagref QE Lyon-AF Bassin Rhône Méditerranée Corse.
 "ips"
 
@@ -135,7 +136,7 @@
 #' @usage data(sla)
 #' @encoding UTF-8
 #' @source \url{https://onlinelibrary.wiley.com/doi/abs/10.1002/aheh.19860140519}
-#' @references Sládecek, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
+#' @references Sládeček, V. (1986). Diatoms as indicators of organic pollution. Acta hydrochimica et hydrobiologica, 14(5), 555-566.
 "sla"
 
 #' SPEAR(h)
@@ -146,7 +147,7 @@
 #' @docType data
 #' @usage data(spear)
 #' @encoding UTF-8
-#' @source \doi{https://doi.org/10.1016/j.ecolind.2018.12.035}
+#' @source \doi{10.1016/j.ecolind.2018.12.035}
 #' @references Wood, R. J., Mitrovic, S. M., Lim, R. P., Warne, M. S. J., Dunlop, J., & Kefford, B. J. (2019). Benthic diatoms as indicators of herbicide toxicity in rivers–A new SPEcies At Risk (SPEARherbicides) index. Ecological Indicators, 99, 203-213.
 "spear"
 
@@ -170,7 +171,7 @@
 #' @docType data
 #' @usage data(pbidw)
 #' @encoding UTF-8
-#' @source \doi{https://doi.org/10.23818/limn.33.23}
+#' @source \url{https://www.researchgate.net/publication/270591536_Periphytic_diatom_index_for_assessing_the_ecological_quality_of_the_Colombian_Andean_urban_wetlands_of_Bogota}
 #' @references Castro-Roa, D., & Pinilla-Agudelo, G. (2014). Periphytic diatom index for assessing the ecological quality of the Colombian Andean urban wetlands of Bogotá. Limnetica, 33(2), 297-312.
 "pbidw"
 
@@ -182,7 +183,7 @@
 #' @docType data
 #' @usage data(disp)
 #' @encoding UTF-8
-#' @source \doi{https://doi.org/10.1016/j.ecolind.2018.07.026}
+#' @source \doi{10.1016/j.ecolind.2018.07.026}
 #' @references Stenger-Kovács, C., Körmendi, K., Lengyel, E., Abonyi, A., Hajnal, É., Szabó, B., Buczkó, K. & Padisák, J. (2018). Expanding the trait-based concept of benthic diatoms: Development of trait-and species-based indices for conductivity as the master variable of ecological status in continental saline lakes. Ecological Indicators, 95, 63-74.
 "disp"
 
@@ -194,7 +195,42 @@
 #' @docType data
 #' @usage data(cemfgs_rb)
 #' @encoding UTF-8
-#' @source \doi{https://doi.org/10.1016/j.ecolind.2017.07.007}
+#' @source \doi{10.1016/j.ecolind.2017.07.007}
 #' @references B-Béres, V., Török, P., Kókai, Z., Lukács, Á., Enikő, T., Tóthmérész, B., & Bácsi, I. (2017). Ecological background of diatom functional groups: Comparability of classification systems. Ecological Indicators, 82, 183-188.
 "cemfgs_rb"
 
+#' EDI
+#'
+#' Index values for diatom species included in the EDI index
+#'
+#' @format A data frame with the ecological values for 147 species
+#' @docType data
+#' @usage data(edi)
+#' @encoding UTF-8
+#' @source \url{https://pubs.acs.org/doi/abs/10.1021/acsestwater.4c00126}
+#' @references Chamorro, S., Moyón, J., Salazar, J., Chamorro, K., Vicuña, Z., Cordero, P., Bécares, E. & Blanco, S. (2024). Water Quality Monitoring in Ecuadorian Streams Using a New Diatom-Based Index. ACS ES&T Water, 4(9), 3816-3823.
+"edi"
+
+#' DDI
+#'
+#' Index values for diatom species included in the DDI index
+#'
+#' @format A data frame with the ecological values for 137 species
+#' @docType data
+#' @usage data(ddi)
+#' @encoding UTF-8
+#' @source \url{https://link.springer.com/article/10.1007/s10661-012-2607-z}
+#' @references Álvarez-Blanco, I., Blanco, S., Cejudo-Figueiras, C., & Bécares, E. (2013). The Duero Diatom Index (DDI) for river water quality assessment in NW Spain: design and validation. Environmental monitoring and assessment, 185, 969-981.
+"ddi"
+
+#' PDISE
+#'
+#' Index values for diatom species included in the PDIse index
+#'
+#' @format A data frame with the ecological values for 455 species
+#' @docType data
+#' @usage data(pdise)
+#' @encoding UTF-8
+#' @source \url{https://link.springer.com/article/10.1007/s10661-023-11378-4}
+#' @references Kahlert, M., Fölster, J., & Tapolczai, K. (2023). No lukewarm diatom communities—the response of freshwater benthic diatoms to phosphorus in streams as basis for a new phosphorus diatom index (PDISE). Environmental Monitoring and Assessment, 195(7), 807
+"pdise"
